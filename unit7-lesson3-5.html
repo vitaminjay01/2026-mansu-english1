@@ -1,0 +1,815 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 7 You Know What? 3-5차시</title>
+<style>
+  :root {
+    --bg:#faf7f2; --card:#ffffff; --ink:#1f2937; --muted:#6b7280; --accent:#f97316; --accent-soft:#ffedd5;
+    --line:#e5e7eb; --good:#16a34a; --good-soft:#dcfce7; --bad:#dc2626; --bad-soft:#fee2e2; --blue:#2563eb; --blue-soft:#dbeafe;
+    --purple:#7c3aed; --purple-soft:#ede9fe; --bar:#fb923c; --bar2:#60a5fa; --bar3:#a78bfa;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#111827; --card:#1f2937; --ink:#f3f4f6; --muted:#9ca3af; --accent:#fb923c; --accent-soft:#431407;
+      --line:#374151; --good:#4ade80; --good-soft:#14532d; --bad:#f87171; --bad-soft:#450a0a; --blue:#60a5fa; --blue-soft:#1e3a8a;
+      --purple:#a78bfa; --purple-soft:#2e1065; --bar:#fb923c; --bar2:#60a5fa; --bar3:#a78bfa;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; line-height:1.6; }
+  main { max-width:900px; margin:0 auto; padding:28px 16px 64px; }
+  a { color:var(--accent); }
+  .back { font-size:.9rem; text-decoration:none; }
+  h1 { font-size:1.8rem; margin:6px 0 2px; }
+  h3 { margin:20px 0 6px; font-size:1.05rem; }
+  .sub { color:var(--muted); margin:0 0 18px; }
+  .en { font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif; }
+  .ko { color:var(--muted); font-size:.85rem; }
+  .goal { background:var(--card); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:12px; padding:14px 18px; margin-bottom:18px; }
+  .goal ul { margin:6px 0 0; padding-left:20px; }
+
+  .tabs { display:flex; gap:8px; position:sticky; top:0; background:var(--bg); padding:10px 0; z-index:5; }
+  .tab { flex:1; border:2px solid var(--accent); background:var(--card); color:var(--ink); border-radius:12px; padding:10px 6px; font-size:.95rem; font-weight:700; cursor:pointer; font-family:inherit; }
+  .tab[aria-selected="true"] { background:var(--accent); color:#fff; }
+  .panel[hidden] { display:none; }
+  @media (max-width:480px){ .tab { font-size:.82rem; padding:8px 4px; } section.step { padding:16px 14px; } }
+
+  section.step { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin:16px 0; }
+  .step h2 { font-size:1.25rem; margin:0 0 4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .num { background:var(--accent); color:#fff; border-radius:999px; min-width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; font-size:.95rem; }
+  .hint { color:var(--muted); margin:0 0 14px; font-size:.95rem; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  button.btn { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:8px 14px; font-size:.95rem; cursor:pointer; font-family:inherit; }
+  button.btn:hover { border-color:var(--accent); }
+  button.btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+  button.btn[aria-pressed="true"] { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.btn:disabled { opacity:.6; cursor:default; }
+  button.say { border:none; background:var(--blue-soft); color:var(--blue); border-radius:999px; width:32px; height:32px; cursor:pointer; flex:none; font-size:.95rem; }
+  .score { font-weight:700; color:var(--accent); }
+  .feedback { font-weight:700; min-height:1.6em; margin-top:6px; }
+  .feedback.ok { color:var(--good); } .feedback.no { color:var(--bad); }
+  .box { background:var(--bg); border-radius:12px; padding:12px 14px; margin:8px 0; }
+  .choices { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:8px; margin-top:8px; }
+  .right { background:var(--good-soft) !important; border-color:var(--good) !important; }
+  .wrong { background:var(--bad-soft) !important; border-color:var(--bad) !important; }
+  input.t, select.t, textarea.t { font-size:1rem; padding:6px 10px; border-radius:8px; border:2px solid var(--line); background:var(--card); color:var(--ink); font-family:inherit; }
+  textarea.t { width:100%; min-height:150px; line-height:1.7; }
+  .key { background:var(--accent-soft); border-radius:4px; padding:0 3px; font-weight:700; }
+  .key2 { background:var(--purple-soft); border-radius:4px; padding:0 3px; font-weight:700; }
+
+  /* predictions */
+  .predict { display:grid; gap:10px; }
+  .pq { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .pq .q { flex:1 1 220px; }
+  .vs button { min-width:120px; }
+
+  /* script */
+  .scene-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+  .script .ln { display:flex; gap:10px; align-items:flex-start; margin:8px 0; }
+  .script .av { flex:none; width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; background:var(--bg); }
+  .script .bd { flex:1; background:var(--bg); border-radius:14px; padding:8px 12px; }
+  .script .bd.speaking { outline:3px solid var(--accent); }
+  .script .who { font-weight:700; font-size:.85rem; color:var(--accent); }
+  .script .tr { color:var(--muted); font-size:.85rem; display:none; }
+  .show-tr .script .tr { display:block; }
+  .vocab { border-bottom:2px dotted var(--blue); cursor:pointer; }
+  .gloss { display:inline-block; background:var(--blue-soft); color:var(--blue); border-radius:6px; font-size:.78rem; padding:0 5px; margin-left:3px; font-family:"Malgun Gothic",sans-serif; }
+  .board { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .player { text-align:center; border-radius:14px; padding:10px; background:var(--bg); }
+  .player .pts { font-size:1.8rem; font-weight:800; color:var(--accent); }
+
+  /* matching */
+  .match { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  @media (max-width:600px){ .match, .board { grid-template-columns:1fr; } }
+  .match .col { display:grid; gap:6px; align-content:start; }
+  .match button { text-align:left; }
+  .match button.sel { outline:3px solid var(--accent); }
+  .match button.done { background:var(--good-soft); border-color:var(--good); cursor:default; }
+
+  /* grammar */
+  .rule-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:10px; }
+  .rule { background:var(--bg); border-radius:12px; padding:12px; }
+  .rule b.t { display:block; margin-bottom:4px; }
+  table.forms { border-collapse:collapse; width:100%; font-size:.95rem; }
+  table.forms td, table.forms th { padding:4px 6px; border-bottom:1px solid var(--line); text-align:left; }
+  table.forms input { width:100%; min-width:90px; }
+  .cmp { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; text-align:center; }
+  .cmp .it { background:var(--bg); border-radius:14px; padding:10px; }
+  .cmp .big { font-size:2.6rem; display:block; }
+  .chars { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; text-align:center; }
+  .chars .c { background:var(--bg); border-radius:14px; padding:10px 4px; }
+  .chars .c .big { font-size:2.2rem; }
+  .stat { font-size:.85rem; }
+  .meter { height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin:2px 0 6px; }
+  .meter > div { height:100%; background:var(--accent); }
+  .chain { font-size:1.3rem; text-align:center; padding:16px; }
+
+  /* writing */
+  .chart { width:100%; height:auto; display:block; }
+  .chart text { fill:var(--ink); font-family:"Segoe UI",Arial,sans-serif; }
+  .chart .lbl { font-size:15px; font-weight:600; }
+  .chart .val { font-size:14px; fill:var(--muted); }
+  .chart .ttl { font-size:17px; font-weight:700; }
+  .model mark { background:var(--accent-soft); color:inherit; border-radius:4px; padding:0 2px; }
+  .model mark.s { background:var(--purple-soft); }
+  .checklist { list-style:none; padding:0; margin:8px 0 0; display:grid; gap:4px; }
+  .checklist li::before { content:"⬜ "; }
+  .checklist li.ok::before { content:"✅ "; }
+  .checklist li.ok { color:var(--good); }
+  .own { display:grid; grid-template-columns:2fr 1fr; gap:6px; }
+  .own input { width:100%; }
+  .self { display:grid; gap:6px; }
+  footer { color:var(--muted); font-size:.85rem; margin-top:40px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./index.html">← 수업 자료실</a>
+  <h1 class="en">Unit 7 · You Know What?</h1>
+  <p class="sub">3~5차시 · 읽기 / 비교급·최상급 / 그래프 설명 글쓰기</p>
+
+  <div class="goal">
+    <strong>🎯 학습 목표</strong>
+    <ul>
+      <li>퀴즈쇼 대본을 읽고 세계의 놀라운 사실을 이해할 수 있다.</li>
+      <li>비교급과 최상급을 사용하여 대상을 비교할 수 있다. <span class="en ko">taller than / the tallest</span></li>
+      <li>그래프를 보고 비교하는 글을 쓸 수 있다.</li>
+    </ul>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-controls="p3" aria-selected="true">3차시 · 읽기</button>
+    <button class="tab" role="tab" aria-controls="p4" aria-selected="false">4차시 · 문법</button>
+    <button class="tab" role="tab" aria-controls="p5" aria-selected="false">5차시 · 쓰기</button>
+  </div>
+
+  <!-- ================= 3차시 읽기 ================= -->
+  <div class="panel" id="p3" role="tabpanel">
+    <section class="step">
+      <h2><span class="num">1</span>Before Reading · 예측하기</h2>
+      <p class="hint">읽기 전에 정답을 예측해 보세요. 읽은 후에 내 예측이 맞았는지 확인해요!</p>
+      <div class="predict" id="predict"></div>
+    </section>
+
+    <section class="step" id="reading">
+      <h2><span class="num">2</span>Reading · <span class="en">The Mansu Quiz Show</span></h2>
+      <p class="hint">파란 점선 단어를 누르면 뜻이 보여요. 문장 옆 🔊로 듣고, 막히면 <b>해석 보기</b>를 켜세요.</p>
+      <div class="scene-tabs" id="sceneTabs"></div>
+      <div class="row" style="margin-bottom:6px">
+        <button class="btn primary" id="readAll">▶ 이 장면 듣기</button>
+        <button class="btn" id="readStop">■ 멈춤</button>
+        <label class="ko"><input type="checkbox" id="showTr"> 해석 보기</label>
+        <label class="ko">속도
+          <select id="rate" class="t" style="font-size:.85rem;padding:2px 4px">
+            <option value="0.7">천천히</option><option value="0.85" selected>보통</option><option value="1">빠르게</option>
+          </select></label>
+      </div>
+      <div class="board" style="margin:10px 0">
+        <div class="player">🧑 <b class="en">Minho</b><div class="pts" id="ptMinho">0</div></div>
+        <div class="player">👧 <b class="en">Lily</b><div class="pts" id="ptLily">0</div></div>
+      </div>
+      <div class="script" id="script"></div>
+      <div class="row"><button class="btn" id="prevScene">← 이전 장면</button><button class="btn primary" id="nextScene">다음 장면 →</button></div>
+    </section>
+
+    <section class="step">
+      <h2><span class="num">3</span>After Reading · 내용 확인</h2>
+      <h3>✔ 예측 확인</h3>
+      <div id="predictCheck" class="box ko">읽기를 끝까지 읽으면 여기에 결과가 나와요.</div>
+
+      <h3>⭕❌ True or False</h3>
+      <div id="tf"></div>
+      <div class="row"><span class="score" id="tfScore"></span></div>
+
+      <h3>🔗 질문과 정답 연결하기</h3>
+      <p class="hint">왼쪽 질문을 누르고, 오른쪽에서 알맞은 정답을 누르세요.</p>
+      <div class="match"><div class="col" id="mQ"></div><div class="col" id="mA"></div></div>
+      <div class="feedback" id="mFb"></div>
+
+      <h3>📝 내용 요약 완성하기</h3>
+      <div class="box en" id="summary" style="line-height:2.2"></div>
+      <div class="row"><button class="btn primary" id="sumCheck">채점</button><span class="score" id="sumScore"></span></div>
+    </section>
+  </div>
+
+  <!-- ================= 4차시 문법 ================= -->
+  <div class="panel" id="p4" role="tabpanel" hidden>
+    <section class="step">
+      <h2><span class="num">4</span>Grammar · 비교급과 최상급</h2>
+      <p class="hint">두 개를 비교할 땐 <span class="key">비교급 + than</span>, 셋 이상 중에서 '가장 ~한'은 <span class="key2">the + 최상급</span>!</p>
+      <div class="rule-grid">
+        <div class="rule"><b class="t">🟠 비교급 (A가 B보다 더 ~하다)</b>
+          <div class="en">Mauna Kea is <span class="key">taller than</span> Mount Everest.</div>
+          <div class="en">Antarctica is <span class="key">larger than</span> the Sahara.</div>
+          <div class="en">A watch is <span class="key">more expensive than</span> a pen.</div>
+        </div>
+        <div class="rule"><b class="t">🟣 최상급 (가장 ~하다)</b>
+          <div class="en">Antarctica is <span class="key2">the largest</span> desert in the world.</div>
+          <div class="en">Angel Falls is <span class="key2">the tallest</span> waterfall in the world.</div>
+          <div class="en">This is <span class="key2">the most difficult</span> question of all.</div>
+        </div>
+      </div>
+      <h3>📏 만드는 규칙</h3>
+      <table class="forms en" id="ruleTable">
+        <tr><th>규칙</th><th>원급</th><th>비교급</th><th>최상급</th></tr>
+      </table>
+    </section>
+
+    <section class="step">
+      <h2><span class="num">5</span>Practice 1 · 변신시키기</h2>
+      <p class="hint">빈칸에 비교급과 최상급을 쓰고 <b>채점</b>을 누르세요.</p>
+      <table class="forms en" id="formQuiz"><tr><th>원급</th><th>비교급</th><th>최상급</th></tr></table>
+      <div class="row" style="margin-top:8px"><button class="btn primary" id="formCheck">채점</button><button class="btn" id="formNew">새 문제</button><span class="score" id="formScore"></span></div>
+    </section>
+
+    <section class="step">
+      <h2><span class="num">6</span>Practice 2 · 둘을 비교해요</h2>
+      <p class="hint">정보를 보고 알맞은 문장을 고르세요. <span class="score" id="cmpScore">0 / 0</span></p>
+      <div id="cmpBox"></div>
+    </section>
+
+    <section class="step">
+      <h2><span class="num">7</span>Practice 3 · 누가 최고?</h2>
+      <p class="hint">세 캐릭터의 능력치를 보고 문장을 완성하세요.</p>
+      <div class="chars" id="chars"></div>
+      <div id="supQ"></div>
+      <div class="row"><button class="btn primary" id="supCheck">채점</button><span class="score" id="supScore"></span></div>
+    </section>
+
+    <section class="step">
+      <h2><span class="num">8</span>Speaking Game · 비교 말꼬리 잇기</h2>
+      <p class="hint">모둠에서 돌아가며 말해요. 앞 사람 문장의 <b>마지막 동물</b>로 새 문장을 시작해요!<br><span class="en">Tigers are bigger than rabbits. → Rabbits are faster than turtles. → Turtles are …</span></p>
+      <div class="chain en" id="chain"></div>
+      <div class="row" style="justify-content:center"><button class="btn primary" id="chainNext">🎲 다음 동물 &amp; 단어</button></div>
+    </section>
+  </div>
+
+  <!-- ================= 5차시 쓰기 ================= -->
+  <div class="panel" id="p5" role="tabpanel" hidden>
+    <section class="step">
+      <h2><span class="num">9</span>Model · 그래프 설명하는 글 살펴보기</h2>
+      <p class="hint">그래프를 보고 아래 글을 읽어 보세요. 글이 어떤 순서로 쓰였는지 찾아봐요.</p>
+      <svg class="chart" id="modelChart" viewBox="0 0 640 230" role="img" aria-label="세계에서 가장 높은 건물 세 개 그래프"></svg>
+      <div class="box en model" style="font-size:1.05rem;line-height:1.9">
+        <mark>This graph is about the three tallest buildings in the world.</mark>
+        The Burj Khalifa is <mark class="s">taller than</mark> Merdeka 118.
+        Merdeka 118 is <mark class="s">taller than</mark> the Shanghai Tower.
+        <mark>The Burj Khalifa is <b>the tallest</b> building in the world.</mark>
+      </div>
+      <div class="row ko" style="gap:14px"><span><mark style="background:var(--accent-soft)">주황</mark> = 그래프 주제 / 결론</span><span><mark style="background:var(--purple-soft)">보라</mark> = 비교</span></div>
+      <h3>🧐 글의 구조 확인</h3>
+      <div id="modelQ"></div>
+    </section>
+
+    <section class="step" id="writeSec">
+      <h2><span class="num">10</span>Write · 그래프 설명 글쓰기</h2>
+      <p class="hint">그래프를 하나 골라 설명하는 글을 써 보세요. 쓰는 동안 오른쪽 아래 체크리스트가 자동으로 확인해 줘요.</p>
+      <div class="row" id="graphPick" style="margin-bottom:8px"></div>
+      <svg class="chart" id="writeChart" viewBox="0 0 640 230" role="img" aria-label="글쓰기용 그래프"></svg>
+
+      <div id="ownBox" class="box" hidden>
+        <b>✏️ 나만의 그래프 만들기</b>
+        <div class="row" style="margin:6px 0">
+          <label class="ko">주제(최상급) <input class="t en" id="ownTopic" placeholder="e.g. tallest students" maxlength="40" style="width:200px"></label>
+          <label class="ko">단위 <input class="t en" id="ownUnit" placeholder="cm" maxlength="10" style="width:80px"></label>
+          <label class="ko">비교 형용사 <input class="t en" id="ownAdj" placeholder="tall" maxlength="20" style="width:110px"></label>
+        </div>
+        <div class="own" id="ownItems"></div>
+        <p class="ko" style="margin:6px 0 0">※ 친구 이름 대신 동물·물건·장소를 쓰는 걸 추천해요.</p>
+      </div>
+
+      <div class="row" style="margin:10px 0 6px">
+        <button class="btn" id="frameBtn">🧱 글의 틀 넣기</button>
+        <button class="btn" id="exampleBtn">👀 예시 답안 보기</button>
+      </div>
+      <textarea class="t en" id="essay" spellcheck="true" placeholder="This graph is about ..."></textarea>
+      <ul class="checklist" id="checklist"></ul>
+
+      <div class="box" style="margin-top:12px">
+        <b>🔎 단어 도우미</b> <span class="ko">모르는 단어를 한국어로 쓰면 영어로 알려 줘요.</span>
+        <div class="row" style="margin-top:6px">
+          <input class="t" id="helpIn" placeholder="예: 빠른, 무거운, 강" maxlength="30">
+          <button class="btn primary" id="helpBtn">찾기</button>
+          <span class="en" id="helpOut" style="font-weight:700"></span>
+        </div>
+        <p class="ko" style="margin:6px 0 0">※ 입력한 단어는 번역 서비스로 보내져요. 개인정보는 쓰지 마세요.</p>
+      </div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="essaySay">🔊 내 글 들어 보기</button>
+        <button class="btn" id="essayCopy">📋 복사하기</button>
+        <span class="ko" id="essayMsg"></span>
+      </div>
+    </section>
+
+    <section class="step">
+      <h2><span class="num">11</span>Check · 짝과 바꿔 읽기</h2>
+      <p class="hint">짝의 글을 읽고 확인해 주세요.</p>
+      <div class="self">
+        <label><input type="checkbox"> 첫 문장에 그래프의 주제를 썼다. <span class="en ko">This graph is about ~.</span></label>
+        <label><input type="checkbox"> 비교급(<span class="en">-er than / more ~ than</span>)을 바르게 썼다.</label>
+        <label><input type="checkbox"> 최상급(<span class="en">the -est / the most</span>)을 바르게 썼다.</label>
+        <label><input type="checkbox"> 그래프의 내용과 글의 내용이 일치한다.</label>
+        <label><input type="checkbox"> 문장을 대문자로 시작하고 마침표로 끝냈다.</label>
+      </div>
+    </section>
+  </div>
+
+  <footer>2026 만수중학교 1학년 영어 · Unit 7 You Know What? · 활동 내용은 저장되지 않아요.</footer>
+</main>
+
+<script src="./tts.js"></script>
+<script>
+/* ---------- utils ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+// 음성은 tts.js(모바일 대응 공용 모듈)가 담당
+const synth = window.TTS && TTS.supported ? { cancel: () => TTS.cancel() } : null;
+const speak = (text, o) => TTS.speak(text, o);
+const say = (text, o) => TTS.say(text, o);
+function sayBtn(text, o){ const b=document.createElement('button'); b.className='say'; b.type='button'; b.textContent='🔊'; b.setAttribute('aria-label','듣기'); b.onclick=()=>say(text,o); return b; }
+const norm = s => s.toLowerCase().replace(/[’']/g,"'").replace(/\s+/g,' ').trim();
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x===t));
+  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.getAttribute('aria-controls'));
+  if (synth) synth.cancel();
+  window.scrollTo({top: document.querySelector('.tabs').offsetTop, behavior:'smooth'});
+});
+
+/* =============== 3차시: 읽기 =============== */
+const PREDICT = [
+  {q:'What is the largest desert in the world?', ko:'세계에서 가장 큰 사막은?', a:['the Sahara','Antarctica'], ans:1},
+  {q:'What is the tallest mountain from the bottom to the top?', ko:'바닥부터 꼭대기까지 가장 높은 산은?', a:['Mount Everest','Mauna Kea'], ans:1},
+  {q:'Which country has the most pyramids?', ko:'피라미드가 가장 많은 나라는?', a:['Egypt','Sudan'], ans:1},
+];
+const myPredict = {};
+PREDICT.forEach((p,i) => {
+  const d = document.createElement('div'); d.className='pq box';
+  d.innerHTML = `<div class="q"><span class="en">${i+1}. ${esc(p.q)}</span><br><span class="ko">${esc(p.ko)}</span></div><div class="row vs"></div>`;
+  p.a.forEach((o,k) => {
+    const b = document.createElement('button'); b.className='btn en'; b.textContent=o; b.setAttribute('aria-pressed','false');
+    b.onclick = () => { myPredict[i]=k; d.querySelectorAll('.vs button').forEach((x,j)=>x.setAttribute('aria-pressed', j===k)); };
+    d.querySelector('.vs').appendChild(b);
+  });
+  $('predict').appendChild(d);
+});
+
+/* script: [[word|뜻]] = vocab */
+const CAST = {
+  Host:{emo:'🎤', pitch:1.0}, Minho:{emo:'🧑', pitch:0.85}, Lily:{emo:'👧', pitch:1.3}, Robo:{emo:'🤖', pitch:0.6}
+};
+const SCENES = [
+  {title:'Scene 1 · 사막', lines:[
+    ['Host','Welcome to the Mansu Quiz Show! Today, we have two players, Minho and Lily. Our helper is Robo, an AI robot.','만수 퀴즈쇼에 오신 것을 환영합니다! 오늘은 두 참가자 민호와 릴리가 있어요. 도우미는 AI 로봇 로보입니다.'],
+    ['Minho','Hi! I’m excited, but I’m a little [[nervous|긴장한]].','안녕하세요! 신나지만 조금 긴장돼요.'],
+    ['Lily','Me, too. Let’s have fun!','저도요. 재미있게 해요!'],
+    ['Host','Here is the first question. What is the largest [[desert|사막]] in the world?','첫 번째 문제입니다. 세계에서 가장 큰 사막은 무엇일까요?'],
+    ['Lily','That’s easy. It’s the Sahara.','쉽네요. 사하라예요.'],
+    ['Minho','Hmm… I think it’s Antarctica.','음… 저는 남극이라고 생각해요.'],
+    ['Host','Robo, can you tell us more about it?','로보, 그것에 대해 더 말해 줄 수 있나요?'],
+    ['Robo','Sure. A desert is a very [[dry|건조한]] place. It can be hot or cold. The Sahara is the largest hot desert. But Antarctica is larger than the Sahara. So Antarctica is the largest desert in the world.','물론이죠. 사막은 매우 건조한 곳이에요. 덥거나 추울 수 있어요. 사하라는 가장 큰 더운 사막이에요. 하지만 남극이 사하라보다 더 커요. 그래서 남극이 세계에서 가장 큰 사막이에요.'],
+    ['Host','Minho gets one [[point|점수]]!','민호가 1점을 얻습니다!'],
+  ], points:{Minho:1, Lily:0}},
+  {title:'Scene 2 · 산', lines:[
+    ['Host','Next question. What is the tallest mountain in the world?','다음 문제입니다. 세계에서 가장 높은 산은 무엇일까요?'],
+    ['Lily','It’s Mount Everest!','에베레스트산이에요!'],
+    ['Minho','Do you know about Mauna Kea? I think it’s Mauna Kea.','마우나케아에 대해 아세요? 저는 마우나케아라고 생각해요.'],
+    ['Host','Interesting! Robo, who is right?','흥미롭네요! 로보, 누가 맞나요?'],
+    ['Robo','You are both right. Mount Everest is the tallest mountain [[above sea level|해수면 위로]]. But Mauna Kea in Hawaii begins deep [[under the sea|바다 밑에서]]. From the [[bottom|바닥]] to the top, Mauna Kea is taller than Mount Everest.','둘 다 맞아요. 에베레스트산은 해수면 위로 가장 높은 산이에요. 하지만 하와이의 마우나케아는 바다 깊은 곳에서 시작해요. 바닥부터 꼭대기까지 재면 마우나케아가 에베레스트산보다 더 높아요.'],
+    ['Host','Wow! You both get one point.','와! 두 사람 모두 1점입니다.'],
+  ], points:{Minho:2, Lily:1}},
+  {title:'Scene 3 · 피라미드', lines:[
+    ['Host','Here is the last question. Which country has the most [[pyramids|피라미드]]?','마지막 문제입니다. 피라미드가 가장 많은 나라는 어디일까요?'],
+    ['Minho','Egypt, of course!','당연히 이집트죠!'],
+    ['Lily','I read a book about it. It’s Sudan.','저 그것에 관한 책을 읽었어요. 수단이에요.'],
+    ['Robo','Lily is right. Egypt has [[famous|유명한]] pyramids, but Sudan has more pyramids than Egypt. Sudan has more than 200 pyramids.','릴리가 맞아요. 이집트에 유명한 피라미드가 있지만, 수단이 이집트보다 피라미드가 더 많아요. 수단에는 피라미드가 200개 넘게 있어요.'],
+    ['Host','So the [[final score|최종 점수]] is two to two. It’s a [[tie|무승부]]! You are both the best!','그럼 최종 점수는 2 대 2. 무승부입니다! 두 사람 모두 최고예요!'],
+  ], points:{Minho:2, Lily:2}},
+];
+let scene = 0, reading = false;
+const seen = new Set();
+const plain = s => s.replace(/\[\[([^|\]]+)\|[^\]]+\]\]/g, '$1');
+function renderVocab(s){
+  return esc(s).replace(/\[\[([^|\]]+)\|([^\]]+)\]\]/g, (m,w,k) => `<span class="vocab" data-k="${k}" tabindex="0">${w}</span>`)
+    .replace(/(taller than|larger than|more pyramids than)/g,'<span class="key">$1</span>')
+    .replace(/(the largest|the tallest|the most)/g,'<span class="key2">$1</span>');
+}
+function renderScene(){
+  $('sceneTabs').innerHTML='';
+  SCENES.forEach((s,i) => {
+    const b=document.createElement('button'); b.className='btn'; b.textContent=s.title; b.setAttribute('aria-pressed', i===scene);
+    b.onclick=()=>{ stopRead(); scene=i; renderScene(); }; $('sceneTabs').appendChild(b);
+  });
+  const box = $('script'); box.innerHTML='';
+  SCENES[scene].lines.forEach(([who,en,ko],i) => {
+    const c = CAST[who];
+    const ln = document.createElement('div'); ln.className='ln';
+    ln.innerHTML = `<div class="av">${c.emo}</div><div class="bd" id="rl${i}"><div class="who">${who}</div><div class="en">${renderVocab(en)}</div><div class="tr">${esc(ko)}</div></div>`;
+    ln.appendChild(sayBtn(plain(en), {pitch:c.pitch}));
+    box.appendChild(ln);
+  });
+  box.querySelectorAll('.vocab').forEach(v => {
+    const t = () => { const g=v.nextElementSibling; if (g && g.classList.contains('gloss')) g.remove(); else v.insertAdjacentHTML('afterend', `<span class="gloss">${v.dataset.k}</span>`); };
+    v.onclick = t; v.onkeydown = e => { if (e.key==='Enter') t(); };
+  });
+  seen.add(scene);
+  const pts = SCENES[scene].points; $('ptMinho').textContent = pts.Minho; $('ptLily').textContent = pts.Lily;
+  $('prevScene').disabled = scene===0;
+  $('nextScene').textContent = scene===SCENES.length-1 ? '내용 확인하러 가기 ↓' : '다음 장면 →';
+  if (seen.size === SCENES.length) showPredict();
+}
+function stopRead(){ reading=false; if (synth) synth.cancel(); document.querySelectorAll('.bd.speaking').forEach(e=>e.classList.remove('speaking')); }
+$('readAll').onclick = () => {
+  stopRead(); reading = true;
+  const L = SCENES[scene].lines;
+  const step = i => {
+    document.querySelectorAll('.bd.speaking').forEach(e=>e.classList.remove('speaking'));
+    if (!reading || i>=L.length){ reading=false; return; }
+    $('rl'+i).classList.add('speaking');
+    speak(plain(L[i][1]), {pitch:CAST[L[i][0]].pitch, onend:()=>setTimeout(()=>step(i+1),300)});
+  };
+  step(0);
+};
+$('readStop').onclick = stopRead;
+$('showTr').onchange = e => $('reading').classList.toggle('show-tr', e.target.checked);
+$('prevScene').onclick = () => { if (scene>0){ stopRead(); scene--; renderScene(); } };
+$('nextScene').onclick = () => {
+  stopRead();
+  if (scene < SCENES.length-1){ scene++; renderScene(); $('reading').scrollIntoView({behavior:'smooth'}); }
+  else $('predictCheck').scrollIntoView({behavior:'smooth', block:'center'});
+};
+function showPredict(){
+  const out = PREDICT.map((p,i) => {
+    const mine = myPredict[i];
+    const r = mine===undefined ? '예측 안 함' : (mine===p.ans ? '⭕ 맞았어요' : '❌ 틀렸어요');
+    return `${i+1}. <span class="en">${esc(p.q)}</span> → 정답 <b class="en">${esc(p.a[p.ans])}</b> (${r})`;
+  });
+  $('predictCheck').innerHTML = out.join('<br>');
+  $('predictCheck').classList.remove('ko');
+}
+renderScene();
+
+/* T/F */
+const TF = [
+  ['Lily thought the Sahara was the largest desert.', true, '릴리는 사하라라고 답했어요.'],
+  ['Antarctica is a hot desert.', false, '남극은 추운 사막이에요.'],
+  ['From the bottom to the top, Mauna Kea is taller than Mount Everest.', true, '마우나케아는 바다 밑에서 시작해요.'],
+  ['Egypt has more pyramids than Sudan.', false, '수단이 이집트보다 피라미드가 더 많아요.'],
+  ['Minho won the quiz show alone.', false, '2 대 2 무승부였어요.'],
+];
+let tfOk = 0, tfDone = 0;
+TF.forEach(([s,a,why],i) => {
+  const d = document.createElement('div'); d.className='box';
+  d.innerHTML = `<div class="row"><span class="en" style="flex:1">${i+1}. ${esc(s)}</span><button class="btn" data-v="1">T</button><button class="btn" data-v="0">F</button></div><div class="feedback"></div>`;
+  d.querySelectorAll('button').forEach(b => b.onclick = () => {
+    if (d.dataset.done) return; d.dataset.done = 1; tfDone++;
+    const ok = (b.dataset.v==='1')===a; if (ok) tfOk++;
+    b.classList.add(ok?'right':'wrong');
+    const fb = d.querySelector('.feedback'); fb.className='feedback '+(ok?'ok':'no');
+    fb.textContent = (ok?'정답! ':'정답은 '+(a?'T':'F')+'. ') + why;
+    $('tfScore').textContent = `${tfOk} / ${TF.length}` + (tfDone===TF.length?' 완료!':'');
+  });
+  $('tf').appendChild(d);
+});
+
+/* matching */
+const MATCH = [
+  ['Q1. The largest desert?', 'Antarctica'],
+  ['Q1-1. The largest hot desert?', 'The Sahara'],
+  ['Q2. The tallest mountain above sea level?', 'Mount Everest'],
+  ['Q2-1. The tallest mountain from bottom to top?', 'Mauna Kea'],
+  ['Q3. The country with the most pyramids?', 'Sudan'],
+];
+let mSel = null, mDone = 0;
+MATCH.forEach(([q],i) => { const b=document.createElement('button'); b.className='btn en'; b.textContent=q; b.dataset.i=i;
+  b.onclick=()=>{ if (b.classList.contains('done')) return; document.querySelectorAll('#mQ .sel').forEach(x=>x.classList.remove('sel')); b.classList.add('sel'); mSel=i; }; $('mQ').appendChild(b); });
+shuffle(MATCH.map((_,i)=>i)).forEach(i => { const b=document.createElement('button'); b.className='btn en'; b.textContent=MATCH[i][1];
+  b.onclick=()=>{
+    if (b.classList.contains('done')) return;
+    if (mSel===null){ $('mFb').className='feedback no'; $('mFb').textContent='먼저 왼쪽 질문을 고르세요.'; return; }
+    if (mSel===i){
+      b.classList.add('done'); const q=document.querySelector(`#mQ [data-i="${i}"]`); q.classList.remove('sel'); q.classList.add('done');
+      q.textContent += ' → ' + MATCH[i][1]; mSel=null; mDone++;
+      $('mFb').className='feedback ok'; $('mFb').textContent = mDone===MATCH.length ? '모두 연결했어요! 🎉' : '정답!';
+    } else { $('mFb').className='feedback no'; $('mFb').textContent='다시 생각해 보세요.'; b.classList.add('wrong'); setTimeout(()=>b.classList.remove('wrong'),500); }
+  }; $('mA').appendChild(b); });
+
+/* summary */
+const SUM = [
+  ['Antarctica is ', ['larger','largest','large'], 'larger', ' than the Sahara.'],
+  [' So Antarctica is the ', ['larger','largest','most large'], 'largest', ' desert in the world.'],
+  [' From the bottom to the top, Mauna Kea is ', ['taller','tallest','more tall'], 'taller', ' than Mount Everest.'],
+  [' Sudan has ', ['many','more','most'], 'more', ' pyramids than Egypt.'],
+  [' Sudan has the ', ['many','more','most'], 'most', ' pyramids in the world.'],
+];
+SUM.forEach(([a,opts,ans,b],i) => {
+  $('summary').append(a);
+  const s = document.createElement('select'); s.className='t'; s.dataset.ans=ans;
+  s.innerHTML = '<option value="">____</option>' + opts.map(o=>`<option>${o}</option>`).join('');
+  s.onchange = () => s.classList.remove('right','wrong');
+  $('summary').append(s, b);
+});
+$('sumCheck').onclick = () => {
+  let ok=0; $('summary').querySelectorAll('select').forEach(s => { const r=s.value===s.dataset.ans; s.classList.toggle('right',r); s.classList.toggle('wrong',!r); if(r) ok++; });
+  $('sumScore').textContent = `${ok} / ${SUM.length}` + (ok===SUM.length?' 🎉':'');
+};
+
+/* =============== 4차시: 문법 =============== */
+const RULES = [
+  ['대부분: -er / -est','tall','taller','tallest'],
+  ['e로 끝나면: -r / -st','large','larger','largest'],
+  ['단모음+단자음: 자음 하나 더','big','bigger','biggest'],
+  ['자음+y: y→i + -er / -est','heavy','heavier','heaviest'],
+  ['긴 단어(2음절 이상 대부분): more / most','expensive','more expensive','most expensive'],
+  ['불규칙','good','better','best'],
+  ['불규칙','many / much','more','most'],
+];
+RULES.forEach(r => { const tr=document.createElement('tr'); tr.innerHTML = `<td style="font-family:'Malgun Gothic',sans-serif;font-size:.85rem">${r[0]}</td><td>${r[1]}</td><td><b>${r[2]}</b></td><td><b>${esc(r[3].startsWith('most')||r[3]==='best'||r[3]==='most'?'the '+r[3]:'the '+r[3])}</b></td>`; $('ruleTable').appendChild(tr); });
+
+const WORDS = [
+  ['tall','taller','tallest'],['small','smaller','smallest'],['fast','faster','fastest'],['long','longer','longest'],['old','older','oldest'],
+  ['large','larger','largest'],['nice','nicer','nicest'],['cute','cuter','cutest'],
+  ['big','bigger','biggest'],['hot','hotter','hottest'],['thin','thinner','thinnest'],
+  ['heavy','heavier','heaviest'],['easy','easier','easiest'],['happy','happier','happiest'],['funny','funnier','funniest'],['busy','busier','busiest'],
+  ['expensive','more expensive','most expensive'],['difficult','more difficult','most difficult'],['beautiful','more beautiful','most beautiful'],['interesting','more interesting','most interesting'],['popular','more popular','most popular'],
+  ['good','better','best'],['bad','worse','worst'],['many','more','most'],
+];
+function newForms(){
+  const t = $('formQuiz'); t.querySelectorAll('tr:not(:first-child)').forEach(r=>r.remove());
+  shuffle(WORDS).slice(0,8).forEach(w => {
+    const tr=document.createElement('tr');
+    tr.innerHTML = `<td><b>${w[0]}</b></td><td><input class="t" data-a="${w[1]}" autocomplete="off" autocapitalize="off"></td><td><input class="t" data-a="${w[2]}" autocomplete="off" autocapitalize="off" placeholder="(the) ..."></td>`;
+    tr.querySelectorAll('input').forEach(i => i.oninput = () => i.classList.remove('right','wrong'));
+    t.appendChild(tr);
+  });
+  $('formScore').textContent='';
+}
+$('formCheck').onclick = () => {
+  let ok=0, n=0;
+  $('formQuiz').querySelectorAll('input').forEach(i => { n++;
+    const v = norm(i.value).replace(/^the /,'');
+    const r = v === i.dataset.a; i.classList.toggle('right',r); i.classList.toggle('wrong',!r);
+    if (r) ok++; else if (i.value) i.title = '정답: ' + i.dataset.a;
+  });
+  $('formScore').textContent = `${ok} / ${n}` + (ok===n?' 🎉 완벽!':' (틀린 칸에 마우스를 올리면 정답이 보여요)');
+};
+$('formNew').onclick = newForms;
+newForms();
+
+/* compare */
+const CMP = [
+  {a:['🐘','An elephant','6,000 kg'], b:['🦒','A giraffe','1,200 kg'], adj:'heavy', er:'heavier', win:'a'},
+  {a:['🐢','A turtle','0.3 km/h'], b:['🐇','A rabbit','70 km/h'], adj:'fast', er:'faster', win:'b'},
+  {a:['🍉','A watermelon','₩20,000'], b:['🍋','A lemon','₩1,000'], adj:'expensive', er:'more expensive', win:'a'},
+  {a:['🏔️','Mount Halla','1,947 m'], b:['⛰️','Mount Bukhan','836 m'], adj:'high', er:'higher', win:'a'},
+  {a:['✏️','A pencil','17 cm'], b:['📏','A ruler','30 cm'], adj:'long', er:'longer', win:'b'},
+  {a:['🐭','A mouse','20 g'], b:['🐈','A cat','4 kg'], adj:'small', er:'smaller', win:'a'},
+];
+let cmpI = 0, cmpOk = 0, cmpN = 0;
+const lowerFirst = s => s.charAt(0).toLowerCase()+s.slice(1);
+function renderCmp(){
+  const c = CMP[cmpI % CMP.length];
+  const W = c.win==='a'?c.a:c.b, L = c.win==='a'?c.b:c.a;
+  const right = `${W[1]} is ${c.er} than ${lowerFirst(L[1])}.`;
+  const wrongs = [`${L[1]} is ${c.er} than ${lowerFirst(W[1])}.`, `${W[1]} is ${c.adj} than ${lowerFirst(L[1])}.`, `${W[1]} is the ${c.er} than ${lowerFirst(L[1])}.`];
+  const box = $('cmpBox');
+  box.innerHTML = `<div class="cmp"><div class="it"><span class="big">${c.a[0]}</span><b class="en">${c.a[1]}</b><br>${c.a[2]}</div><b>VS</b><div class="it"><span class="big">${c.b[0]}</span><b class="en">${c.b[1]}</b><br>${c.b[2]}</div></div>
+    <p class="ko" style="text-align:center;margin:6px 0">단어: <b class="en">${c.adj}</b></p><div class="choices" style="grid-template-columns:1fr"></div><div class="feedback"></div>`;
+  let answered = false;
+  shuffle([right, ...wrongs.slice(0,2)]).forEach(s => {
+    const b=document.createElement('button'); b.className='btn en'; b.style.textAlign='left'; b.textContent=s;
+    b.onclick=()=>{
+      if (answered) return; answered = true; cmpN++;
+      const ok = s===right; if (ok) cmpOk++;
+      b.classList.add(ok?'right':'wrong');
+      const fb = box.querySelector('.feedback'); fb.className='feedback '+(ok?'ok':'no');
+      fb.textContent = ok ? '정답! 👍' : '정답: ' + right;
+      say(right);
+      $('cmpScore').textContent = `${cmpOk} / ${cmpN}`;
+      const n=document.createElement('button'); n.className='btn primary'; n.textContent='다음 →'; n.style.marginTop='8px';
+      n.onclick=()=>{ cmpI++; renderCmp(); }; fb.after(n);
+    };
+    box.querySelector('.choices').appendChild(b);
+  });
+}
+renderCmp();
+
+/* superlative characters */
+const CHARS = [
+  {n:'Tobi', emo:'🦊', tall:120, fast:9, strong:4},
+  {n:'Momo', emo:'🐻', tall:150, fast:3, strong:10},
+  {n:'Rara', emo:'🦒', tall:190, fast:6, strong:6},
+];
+CHARS.forEach(c => {
+  const d=document.createElement('div'); d.className='c';
+  d.innerHTML = `<div class="big">${c.emo}</div><b class="en">${c.n}</b>
+   <div class="stat">키 ${c.tall}cm</div><div class="meter"><div style="width:${c.tall/2}%"></div></div>
+   <div class="stat">빠르기</div><div class="meter"><div style="width:${c.fast*10}%"></div></div>
+   <div class="stat">힘</div><div class="meter"><div style="width:${c.strong*10}%"></div></div>`;
+  $('chars').appendChild(d);
+});
+const SUPQ = [
+  ['', ' is the tallest of the three.', 'Rara', 'name'],
+  ['Tobi is the ', ' of the three.', 'fastest', 'adj'],
+  ['', ' is the strongest of the three.', 'Momo', 'name'],
+  ['Tobi is the ', ' of the three.', 'shortest', 'adj'],
+  ['Momo is ', ' than Rara.', 'slower', 'adj2'],
+];
+const ADJ = ['tallest','fastest','strongest','shortest','slowest'], ADJ2 = ['slower','faster','taller','stronger'];
+SUPQ.forEach(([a,b,ans,type]) => {
+  const d=document.createElement('div'); d.className='box en';
+  const s=document.createElement('select'); s.className='t'; s.dataset.ans=ans;
+  const opts = type==='name' ? CHARS.map(c=>c.n) : type==='adj' ? ADJ : ADJ2;
+  s.innerHTML = '<option value="">____</option>'+opts.map(o=>`<option>${o}</option>`).join('');
+  s.onchange = () => s.classList.remove('right','wrong');
+  d.append(a, s, b); $('supQ').appendChild(d);
+});
+$('supCheck').onclick = () => {
+  let ok=0; $('supQ').querySelectorAll('select').forEach(s=>{ const r=s.value===s.dataset.ans; s.classList.toggle('right',r); s.classList.toggle('wrong',!r); if(r) ok++; });
+  $('supScore').textContent = `${ok} / ${SUPQ.length}` + (ok===SUPQ.length?' 🎉':'');
+};
+
+/* chain game */
+const ANIMALS = [['🐯','Tigers'],['🐇','Rabbits'],['🐢','Turtles'],['🐘','Elephants'],['🐭','Mice'],['🐶','Dogs'],['🐱','Cats'],['🐼','Pandas'],['🦁','Lions'],['🐌','Snails'],['🐒','Monkeys'],['🐊','Crocodiles'],['🦒','Giraffes'],['🐷','Pigs']];
+const CADJ = ['bigger','smaller','faster','slower','cuter','heavier','stronger','taller','friendlier','scarier','more popular','more dangerous'];
+let chainLast = null;
+function nextChain(){
+  const a = chainLast || pick(ANIMALS);
+  let b; do { b = pick(ANIMALS); } while (b===a);
+  const adj = pick(CADJ);
+  $('chain').innerHTML = `<div style="font-size:2.4rem">${a[0]} ↔ ${b[0]}</div><div>${a[1]} are <span class="key">${adj}</span> than ${b[1].toLowerCase()}?</div><div class="ko">말해 보고, 사실이 아니면 반대로 고쳐 말해요!</div>`;
+  chainLast = b;
+}
+$('chainNext').onclick = nextChain;
+nextChain();
+
+/* =============== 5차시: 쓰기 =============== */
+function drawChart(svg, {title, unit, items}){
+  const max = Math.max(...items.map(i=>+i.v||0), 1);
+  const colors = ['var(--bar)','var(--bar2)','var(--bar3)'];
+  let h = `<text class="ttl" x="320" y="24" text-anchor="middle">${esc(title)}</text>`;
+  items.forEach((it,i) => {
+    const y = 50 + i*58, w = Math.max(4, (+it.v||0)/max*360);
+    h += `<text class="lbl" x="180" y="${y+26}" text-anchor="end">${esc(it.n||'?')}</text>
+      <rect x="192" y="${y+4}" width="${w}" height="34" rx="6" style="fill:${colors[i]}"/>
+      <text class="val" x="${198+w}" y="${y+26}">${esc((+it.v||0).toLocaleString('en-US'))} ${esc(unit)}</text>`;
+  });
+  svg.innerHTML = h;
+}
+drawChart($('modelChart'), {title:'The Three Tallest Buildings in the World', unit:'m', items:[
+  {n:'Burj Khalifa', v:828},{n:'Merdeka 118', v:679},{n:'Shanghai Tower', v:632}]});
+
+const MQ = [
+  ['첫 문장은 무엇을 알려 주나요?', ['그래프의 주제','가장 높은 건물','건물의 위치'], 0],
+  ['가운데 두 문장은 어떤 순서로 비교하나요?', ['작은 것 → 큰 것','1등과 2등, 2등과 3등','무작위'], 1],
+  ['마지막 문장에 쓰인 문법은?', ['비교급','최상급','과거형'], 1],
+];
+MQ.forEach(([q,opts,a]) => {
+  const d=document.createElement('div'); d.className='box';
+  d.innerHTML = `<div>${q}</div><div class="choices"></div><div class="feedback"></div>`;
+  opts.forEach((o,i)=>{ const b=document.createElement('button'); b.className='btn'; b.textContent=o;
+    b.onclick=()=>{ const ok=i===a; b.classList.add(ok?'right':'wrong'); const fb=d.querySelector('.feedback'); fb.className='feedback '+(ok?'ok':'no'); fb.textContent=ok?'정답!':'다시 생각해 보세요.'; };
+    d.querySelector('.choices').appendChild(b); });
+  $('modelQ').appendChild(d);
+});
+
+const GRAPHS = [
+  {key:'animals', label:'🐆 빠른 동물', title:'The Three Fastest Land Animals', topic:'fastest land animals', adj:'fast', er:'faster', est:'fastest', noun:'land animal', unit:'km/h',
+   items:[{n:'The cheetah', v:110},{n:'The pronghorn', v:88},{n:'The lion', v:80}]},
+  {key:'rivers', label:'🌊 긴 강', title:'The Three Longest Rivers in the World', topic:'longest rivers', adj:'long', er:'longer', est:'longest', noun:'river', unit:'km',
+   items:[{n:'The Nile', v:6650},{n:'The Amazon', v:6400},{n:'The Yangtze', v:6300}]},
+  {key:'heavy', label:'🐘 무거운 육지 동물', title:'The Three Heaviest Land Animals', topic:'heaviest land animals', adj:'heavy', er:'heavier', est:'heaviest', noun:'land animal', unit:'kg',
+   items:[{n:'The African elephant', v:6000},{n:'The white rhino', v:2300},{n:'The hippo', v:1500}]},
+  {key:'own', label:'✏️ 나만의 그래프', own:true},
+];
+let G = GRAPHS[0];
+const short = n => n.replace(/^The /,'').replace(/^the /,'');
+function makeOwn(){
+  const adj = norm($('ownAdj').value) || 'tall';
+  const er = formOf(adj, 1), est = formOf(adj, 2);
+  const topic = $('ownTopic').value.trim() || ('the three ' + est + ' things');
+  const items = [...$('ownItems').querySelectorAll('.row-item')].map(r => ({n:r.querySelector('.nm').value.trim(), v:parseFloat(r.querySelector('.vv').value)||0}))
+    .sort((a,b)=>b.v-a.v);
+  return {own:true, title: topic.replace(/^\w/, c=>c.toUpperCase()), topic: topic.replace(/^(the )?(three )?/i,''), adj, er, est, unit:$('ownUnit').value.trim(), items};
+}
+function formOf(adj, k){
+  const w = WORDS.find(x=>x[0]===adj); if (w) return w[k].replace(/^most /,'most ');
+  if (adj.split(' ').length>1 || adj.length>=8) return (k===1?'more ':'most ')+adj;
+  if (/[^aeiou]y$/.test(adj)) return adj.slice(0,-1)+(k===1?'ier':'iest');
+  if (/e$/.test(adj)) return adj+(k===1?'r':'st');
+  if (/[^aeiou][aeiou][^aeiouwxy]$/.test(adj)) return adj+adj.slice(-1)+(k===1?'er':'est');
+  return adj+(k===1?'er':'est');
+}
+(function(){
+  const box = $('ownItems');
+  [['Lotte World Tower','555'],['N Seoul Tower','480'],['63 Building','264']].forEach(([n,v]) => {
+    const r = document.createElement('div'); r.className='row-item'; r.style.display='contents';
+    r.innerHTML = `<input class="t en nm" placeholder="${n}" maxlength="30"><input class="t vv" type="number" placeholder="${v}" min="0">`;
+    box.appendChild(r);
+  });
+  ['ownTopic','ownUnit','ownAdj'].forEach(id => $(id).addEventListener('input', refreshGraph));
+  box.addEventListener('input', refreshGraph);
+})();
+function refreshGraph(){
+  if (G.own){
+    const g = makeOwn();
+    drawChart($('writeChart'), {title:g.title || 'My Graph', unit:g.unit, items:g.items.map(i=>({n:i.n||'?', v:i.v}))});
+    G = Object.assign({}, GRAPHS[3], g);
+  } else drawChart($('writeChart'), G);
+  checkEssay();
+}
+GRAPHS.forEach((g,i) => {
+  const b=document.createElement('button'); b.className='btn'; b.textContent=g.label; b.setAttribute('aria-pressed', i===0);
+  b.onclick=()=>{ $('graphPick').querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed', x===b)); G = g; $('ownBox').hidden = !g.own; refreshGraph(); };
+  $('graphPick').appendChild(b);
+});
+function nameIn(n){ return n.replace(/^the /i,''); }
+function modelText(g){
+  const [a,b,c] = g.items; const A=a.n||'A', B=b.n||'B', C=c.n||'C';
+  const low = s => s.replace(/^The /,'the ');
+  return `This graph is about the three ${g.topic}${g.own?'':' in the world'}. ${A} is ${g.er} than ${low(B)}. ${B} is ${g.er} than ${low(C)}. ${A} is the ${g.est} ${g.noun||'one'}${g.own?'':' in the world'}.`.replace(/\.\./g,'.');
+}
+$('frameBtn').onclick = () => {
+  if ($('essay').value.trim() && !confirm('지금 쓴 글이 지워져요. 틀을 넣을까요?')) return;
+  $('essay').value = `This graph is about the three ______.\n______ is ______er than ______.\n______ is ______er than ______.\n______ is the ______est ______.`;
+  checkEssay(); $('essay').focus();
+};
+$('exampleBtn').onclick = () => {
+  $('essayMsg').textContent = '';
+  const t = modelText(G);
+  const ok = confirm('예시 답안:\n\n' + t + '\n\n예시를 보고 스스로 써 보는 게 더 좋아요! 그래도 글쓰기 칸에 넣을까요?');
+  if (ok){ $('essay').value = t; checkEssay(); }
+};
+function checkEssay(){
+  const raw = $('essay').value, t = norm(raw);
+  const names = (G.items||[]).map(i => norm(nameIn(i.n||''))).filter(Boolean);
+  const er = norm(G.er||''), est = norm(G.est||'');
+  const sents = raw.split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(Boolean);
+  const items = [
+    ['첫 문장: This graph is about ~', /^this graph is about/.test(t)],
+    [`비교급 문장 2개: ~ is ${G.er||'-er'} than ~`, (t.match(new RegExp(`\\b${er}\\s+than\\b`,'g'))||[]).length >= 2],
+    [`최상급 문장: ~ is the ${G.est||'-est'} ~`, new RegExp(`\\bthe\\s+${est}\\b`).test(t)],
+    ['그래프의 세 대상이 모두 들어감', names.length===3 && names.every(n => t.includes(n))],
+    ['문장을 대문자로 시작하고 마침표로 끝냄', sents.length>0 && sents.every(s => /^[A-Z0-9"]/.test(s) && /[.!?]$/.test(s))],
+    ['빈칸(____)이 남아 있지 않음', raw.trim().length>0 && !/__/.test(raw)],
+  ];
+  // 순서 검사: 비교급 문장에서 큰 쪽이 앞에 오는지
+  const order = (G.items||[]).map(i => norm(nameIn(i.n||'')));
+  let orderOk = true;
+  const re = new RegExp(`([a-z0-9 \\-']+?) (?:is|are) ${er.replace(/ /g,'\\s+')} than ([a-z0-9 \\-']+)`, 'g');
+  let m; while ((m = re.exec(t))){
+    const L = order.findIndex(n => n && m[1].includes(n)), R = order.findIndex(n => n && m[2].includes(n));
+    if (L>=0 && R>=0 && L>R) orderOk = false;
+  }
+  items.push(['비교 내용이 그래프와 일치함', orderOk && raw.trim().length>0]);
+  $('checklist').innerHTML = items.map(([s,ok]) => `<li class="${ok?'ok':''}">${esc(s)}</li>`).join('');
+}
+$('essay').addEventListener('input', checkEssay);
+$('essaySay').onclick = () => {
+  const t = $('essay').value.trim();
+  if (!t){ $('essayMsg').textContent='먼저 글을 써 주세요.'; return; }
+  if (/[가-힣]/.test(t)){ $('essayMsg').textContent='한국어가 남아 있어요. 단어 도우미로 영어 단어를 찾아보세요.'; return; }
+  say(t);
+};
+$('essayCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('essay').value); $('essayMsg').textContent='복사했어요! 과제란에 붙여 넣으세요.'; }
+  catch { $('essayMsg').textContent='복사가 안 되면 글을 직접 드래그해서 복사하세요.'; }
+};
+
+/* word helper */
+async function translateKo(text){
+  try {
+    const r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=' + encodeURIComponent(text));
+    if (!r.ok) throw 0;
+    const j = await r.json(); const out = j[0].map(x=>x[0]).join('').trim();
+    if (out) return out; throw 0;
+  } catch (e) {
+    const r = await fetch('https://api.mymemory.translated.net/get?langpair=ko|en&q=' + encodeURIComponent(text));
+    const j = await r.json(); const out = (j.responseData && j.responseData.translatedText || '').trim();
+    if (!out || /MYMEMORY WARNING|QUERY LENGTH/i.test(out)) throw new Error('fail');
+    return out;
+  }
+}
+$('helpBtn').onclick = async () => {
+  const v = $('helpIn').value.trim(); if (!v) return;
+  $('helpOut').textContent = '⏳';
+  try {
+    const en = (await translateKo(v)).replace(/[.!]$/,'');
+    const w = norm(en);
+    let extra = '';
+    if (/^[a-z]+$/.test(w)) { const er = formOf(w,1), est = formOf(w,2); extra = `  (비교급 ${er} · 최상급 the ${est})`; }
+    $('helpOut').textContent = en + extra;
+  } catch { $('helpOut').textContent = '지금은 찾을 수 없어요.'; }
+};
+$('helpIn').addEventListener('keydown', e => { if (e.key==='Enter') $('helpBtn').click(); });
+
+refreshGraph();
+</script>
+</body>
+</html>

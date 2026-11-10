@@ -32,6 +32,7 @@
   .tab { flex:1; border:2px solid var(--accent); background:var(--card); color:var(--ink); border-radius:12px; padding:10px; font-size:1rem; font-weight:700; cursor:pointer; }
   .tab[aria-selected="true"] { background:var(--accent); color:#fff; }
   .panel[hidden] { display:none; }
+  @media (max-width:480px){ .tab { font-size:.82rem; padding:8px 4px; } section.step { padding:16px 14px; } }
 
   section.step { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin:16px 0; }
   .step h2 { font-size:1.25rem; margin:0 0 4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
@@ -58,7 +59,7 @@
   @keyframes flash { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
   /* Expressions */
-  .expr-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; }
+  .expr-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr)); gap:12px; }
   .expr { border-radius:12px; padding:14px; background:var(--bg); }
   .expr h3 { margin:0 0 8px; font-size:1rem; }
   .line { display:flex; align-items:center; gap:8px; margin:6px 0; }
@@ -341,26 +342,13 @@
   <footer>2026 만수중학교 1학년 영어 · Unit 7 You Know What? · 활동 내용은 저장되지 않아요.</footer>
 </main>
 
+<script src="./tts.js"></script>
 <script>
 /* ---------- speech ---------- */
-const synth = window.speechSynthesis;
-let enVoice = null;
-function pickVoice(){
-  if (!synth) return;
-  const vs = synth.getVoices().filter(v => /^en[-_]/i.test(v.lang));
-  enVoice = vs.find(v => /en[-_]US/i.test(v.lang) && /Google|Natural|Online/i.test(v.name))
-         || vs.find(v => /en[-_]US/i.test(v.lang)) || vs[0] || null;
-}
-if (synth){ pickVoice(); synth.onvoiceschanged = pickVoice; }
-const rate = () => parseFloat(document.getElementById('rate').value) || 0.85;
-function speak(text, {pitch=1, onend}={}){
-  if (!synth){ alert('이 브라우저는 음성 읽기를 지원하지 않아요.'); return; }
-  const u = new SpeechSynthesisUtterance(text.replace(/[“”]/g,'"'));
-  u.lang = 'en-US'; if (enVoice) u.voice = enVoice; u.rate = rate(); u.pitch = pitch;
-  if (onend) u.onend = onend;
-  synth.speak(u);
-}
-function say(text, opts){ if (synth) synth.cancel(); speak(text, opts); }
+// 음성은 tts.js(모바일 대응 공용 모듈)가 담당
+const synth = window.TTS && TTS.supported ? { cancel: () => TTS.cancel() } : null;
+const speak = (text, o) => TTS.speak(text, o);
+const say = (text, o) => TTS.say(text, o);
 function sayBtn(text){
   const b = document.createElement('button'); b.className='say'; b.type='button'; b.textContent='🔊';
   b.setAttribute('aria-label','듣기: '+text); b.onclick = () => say(text); return b;
