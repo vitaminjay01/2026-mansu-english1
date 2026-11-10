@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Unit 7 You Know What? 1-2차시</title>
+<style>
+  :root {
+    --bg:#faf7f2; --card:#ffffff; --ink:#1f2937; --muted:#6b7280; --accent:#f97316; --accent-soft:#ffedd5;
+    --line:#e5e7eb; --good:#16a34a; --good-soft:#dcfce7; --bad:#dc2626; --bad-soft:#fee2e2; --blue:#2563eb; --blue-soft:#dbeafe;
+    --sky:#cfe8ff; --ground:#e9dcc3; --ice:#eef6fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg:#111827; --card:#1f2937; --ink:#f3f4f6; --muted:#9ca3af; --accent:#fb923c; --accent-soft:#431407;
+      --line:#374151; --good:#4ade80; --good-soft:#14532d; --bad:#f87171; --bad-soft:#450a0a; --blue:#60a5fa; --blue-soft:#1e3a8a;
+      --sky:#1e3a5f; --ground:#4a3f2e; --ice:#2b3b47;
+    }
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; line-height:1.6; }
+  main { max-width:900px; margin:0 auto; padding:28px 16px 64px; }
+  a { color:var(--accent); }
+  .back { font-size:.9rem; text-decoration:none; }
+  h1 { font-size:1.8rem; margin:6px 0 2px; }
+  .sub { color:var(--muted); margin:0 0 18px; }
+  .en { font-family:"Segoe UI","Helvetica Neue",Arial,sans-serif; }
+  .goal { background:var(--card); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:12px; padding:14px 18px; margin-bottom:18px; }
+  .goal ul { margin:6px 0 0; padding-left:20px; }
+
+  .tabs { display:flex; gap:8px; position:sticky; top:0; background:var(--bg); padding:10px 0; z-index:5; }
+  .tab { flex:1; border:2px solid var(--accent); background:var(--card); color:var(--ink); border-radius:12px; padding:10px; font-size:1rem; font-weight:700; cursor:pointer; }
+  .tab[aria-selected="true"] { background:var(--accent); color:#fff; }
+  .panel[hidden] { display:none; }
+
+  section.step { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:20px; margin:16px 0; }
+  .step h2 { font-size:1.25rem; margin:0 0 4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .num { background:var(--accent); color:#fff; border-radius:999px; min-width:30px; height:30px; display:inline-flex; align-items:center; justify-content:center; font-size:.95rem; }
+  .hint { color:var(--muted); margin:0 0 14px; font-size:.95rem; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+
+  button.btn { border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:10px; padding:8px 14px; font-size:.95rem; cursor:pointer; font-family:inherit; }
+  button.btn:hover { border-color:var(--accent); }
+  button.btn.primary { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+  button.say { border:none; background:var(--blue-soft); color:var(--blue); border-radius:999px; width:34px; height:34px; cursor:pointer; flex:none; font-size:1rem; }
+  .score { font-weight:700; color:var(--accent); }
+
+  /* Spot the mistakes */
+  .scene-wrap { position:relative; border-radius:12px; overflow:hidden; border:1px solid var(--line); }
+  .scene { display:block; width:100%; height:auto; cursor:crosshair; touch-action:manipulation; }
+  .scene .spot { fill:transparent; cursor:pointer; }
+  .scene .ring { fill:none; stroke:var(--bad); stroke-width:5; opacity:0; transition:opacity .25s; }
+  .scene .ring.on { opacity:1; }
+  .found-list { list-style:none; padding:0; margin:12px 0 0; display:grid; gap:8px; }
+  .found-list li { background:var(--bg); border-radius:10px; padding:8px 12px; display:flex; gap:10px; align-items:center; }
+  .found-list li.locked { color:var(--muted); }
+  .flash { animation:flash .4s; }
+  @keyframes flash { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+
+  /* Expressions */
+  .expr-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; }
+  .expr { border-radius:12px; padding:14px; background:var(--bg); }
+  .expr h3 { margin:0 0 8px; font-size:1rem; }
+  .line { display:flex; align-items:center; gap:8px; margin:6px 0; }
+  .line .en { font-size:1.05rem; }
+  .ko { color:var(--muted); font-size:.85rem; }
+
+  /* Dialogue */
+  .dlg-tabs { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .dlg-tabs button[aria-pressed="true"] { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .bubble { display:flex; gap:10px; align-items:flex-start; margin:10px 0; }
+  .bubble .who { flex:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.3rem; background:var(--accent-soft); }
+  .bubble.b .who { background:var(--blue-soft); }
+  .bubble .txt { background:var(--bg); border-radius:14px; padding:8px 12px; flex:1; }
+  .bubble .txt.speaking { outline:3px solid var(--accent); }
+  .bubble .key { background:var(--accent-soft); border-radius:4px; padding:0 3px; font-weight:700; }
+  .hide-text .bubble .en-text { filter:blur(6px); }
+  label.inline { display:inline-flex; align-items:center; gap:6px; font-size:.9rem; color:var(--muted); }
+
+  /* Passport tour */
+  .passport { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+  .stamp { width:38px; height:38px; border-radius:50%; border:2px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:1.2rem; opacity:.35; }
+  .stamp.got { opacity:1; border:2px solid var(--accent); background:var(--accent-soft); }
+  .land-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px; }
+  .land { border:2px solid var(--line); border-radius:14px; background:var(--bg); padding:12px 8px; text-align:center; cursor:pointer; color:var(--ink); font-family:inherit; }
+  .land:hover { border-color:var(--accent); }
+  .land .emo { font-size:2.2rem; display:block; }
+  .land .nm { font-weight:700; font-size:.95rem; }
+  .land.done { border-color:var(--good); }
+  .land.done::after { content:"✔ 도장"; display:block; color:var(--good); font-size:.8rem; font-weight:700; }
+  .tour-box { margin-top:14px; border:2px solid var(--accent); border-radius:14px; padding:16px; }
+  .choices { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:8px; margin-top:8px; }
+  .choice.right { background:var(--good-soft); border-color:var(--good); }
+  .choice.wrong { background:var(--bad-soft); border-color:var(--bad); }
+  .feedback { margin-top:8px; font-weight:700; min-height:1.6em; }
+  .feedback.ok { color:var(--good); } .feedback.no { color:var(--bad); }
+
+  /* Fill in blanks */
+  .fill-item { background:var(--bg); border-radius:12px; padding:12px 14px; margin:8px 0; }
+  .fill-item p { margin:4px 0; }
+  select.blank { font-size:1rem; padding:3px 6px; border-radius:8px; border:2px solid var(--line); background:var(--card); color:var(--ink); font-family:inherit; }
+  select.blank.right { border-color:var(--good); background:var(--good-soft); }
+  select.blank.wrong { border-color:var(--bad); background:var(--bad-soft); }
+
+  /* Order */
+  .order-pool, .order-answer { display:grid; gap:6px; margin:8px 0; min-height:44px; }
+  .order-answer { border:2px dashed var(--line); border-radius:12px; padding:8px; }
+  .order-pool button, .order-answer button { text-align:left; }
+
+  /* Pair card */
+  .pair { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:600px){ .pair { grid-template-columns:1fr; } }
+  .role { border-radius:14px; padding:14px; }
+  .role.a { background:var(--accent-soft); } .role.b { background:var(--blue-soft); }
+  .role h3 { margin:0 0 6px; font-size:1rem; }
+  .role .big { font-size:2.4rem; }
+  .role ol { margin:6px 0 0; padding-left:20px; }
+  .secret { filter:blur(7px); cursor:pointer; transition:filter .2s; }
+  .secret.show { filter:none; }
+  .timer { font-variant-numeric:tabular-nums; font-weight:700; font-size:1.2rem; }
+
+  /* OX */
+  .ox-card { text-align:center; padding:12px; }
+  .ox-q { font-size:1.25rem; margin:10px 0 4px; }
+  .ox-btns { display:flex; gap:12px; justify-content:center; margin:14px 0; }
+  .ox-btns button { width:110px; height:90px; font-size:2.6rem; border-radius:18px; border:3px solid var(--line); background:var(--bg); cursor:pointer; color:var(--ink); }
+  .ox-btns button:hover { border-color:var(--accent); }
+  .ox-exp { background:var(--bg); border-radius:12px; padding:12px; text-align:left; }
+  .progress { height:8px; background:var(--line); border-radius:99px; overflow:hidden; margin:8px 0; }
+  .progress > div { height:100%; background:var(--accent); width:0; transition:width .3s; }
+
+  /* Wrap-up */
+  .maker { display:grid; gap:10px; }
+  .maker label { display:grid; gap:4px; font-size:.9rem; color:var(--muted); }
+  .maker input { font-size:1rem; padding:8px 10px; border-radius:8px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font-family:inherit; }
+  .preview { background:var(--bg); border-radius:12px; padding:12px 14px; }
+  .check { display:grid; gap:6px; margin-top:8px; }
+  footer { color:var(--muted); font-size:.85rem; margin-top:40px; text-align:center; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./index.html">← 수업 자료실</a>
+  <h1 class="en">Unit 7 · You Know What?</h1>
+  <p class="sub">1~2차시 · 알고 있는지 묻기 / 궁금증 표현하기</p>
+
+  <div class="goal">
+    <strong>🎯 학습 목표</strong>
+    <ul>
+      <li>상대방이 어떤 것을 알고 있는지 영어로 묻고 답할 수 있다. <span class="en ko">Do you know about ~?</span></li>
+      <li>궁금한 것을 더 알려 달라고 영어로 말할 수 있다. <span class="en ko">Can you tell me more about it?</span></li>
+    </ul>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tab1" aria-controls="p1" aria-selected="true">1차시 · 듣고 익히기</button>
+    <button class="tab" role="tab" id="tab2" aria-controls="p2" aria-selected="false">2차시 · 말하고 확인하기</button>
+  </div>
+
+  <!-- ================= 1차시 ================= -->
+  <div class="panel" id="p1" role="tabpanel" aria-labelledby="tab1">
+
+    <section class="step" id="spot">
+      <h2><span class="num">1</span>Warm-up · Spot the Mistakes!</h2>
+      <p class="hint">그림에서 <b>어색한 곳 5군데</b>를 찾아 눌러 보세요. 찾으면 그 이유를 영어로 들을 수 있어요. <span class="score" id="spotScore">0 / 5</span></p>
+      <div class="scene-wrap" id="sceneWrap">
+        <svg class="scene" id="scene" viewBox="0 0 800 450" role="img" aria-label="어색한 곳이 다섯 군데 숨어 있는 그림">
+          <rect x="0" y="0" width="800" height="300" style="fill:var(--sky)"/>
+          <rect x="0" y="300" width="800" height="150" style="fill:var(--ground)"/>
+          <ellipse cx="170" cy="380" rx="170" ry="55" style="fill:var(--ice)"/>
+          <circle cx="740" cy="50" r="30" fill="#fbbf24"/>
+          <!-- calendar -->
+          <g>
+            <rect x="40" y="30" width="150" height="150" rx="10" fill="#fff" stroke="#9ca3af" stroke-width="2"/>
+            <rect x="40" y="30" width="150" height="38" rx="10" fill="#ef4444"/>
+            <rect x="40" y="55" width="150" height="13" fill="#ef4444"/>
+            <text x="115" y="57" text-anchor="middle" font-size="20" font-weight="700" fill="#fff" font-family="Arial">NOVEMBER</text>
+            <text x="115" y="150" text-anchor="middle" font-size="66" font-weight="700" fill="#1f2937" font-family="Arial">31</text>
+          </g>
+          <!-- clock -->
+          <g transform="translate(330,110)">
+            <circle r="72" fill="#fff" stroke="#6b7280" stroke-width="5"/>
+            <g font-family="Arial" font-size="16" font-weight="700" fill="#1f2937" text-anchor="middle" id="clockNums"></g>
+            <line x1="0" y1="0" x2="0" y2="-44" stroke="#1f2937" stroke-width="5" stroke-linecap="round"/>
+            <line x1="0" y1="0" x2="32" y2="10" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+            <circle r="5" fill="#ef4444"/>
+          </g>
+          <!-- sign post -->
+          <g>
+            <rect x="606" y="120" width="10" height="200" fill="#92400e"/>
+            <polygon points="520,110 700,110 725,140 700,170 520,170" fill="#065f46"/>
+            <text x="610" y="136" text-anchor="middle" font-size="17" fill="#fff" font-family="Arial">EIFFEL TOWER</text>
+            <text x="610" y="160" text-anchor="middle" font-size="17" font-weight="700" fill="#fde68a" font-family="Arial">→ LONDON 2 km</text>
+            <text x="690" y="270" font-size="70">🗼</text>
+          </g>
+          <!-- penguin & polar bear -->
+          <text x="70" y="395" font-size="74">🐻‍❄️</text>
+          <text x="190" y="400" font-size="62">🐧</text>
+          <!-- dinosaur & kid with phone -->
+          <text x="400" y="405" font-size="100">🦖</text>
+          <text x="530" y="400" font-size="62">🧒</text>
+          <text x="585" y="385" font-size="36">📱</text>
+          <!-- harmless decorations (not mistakes) -->
+          <text x="200" y="250" font-size="40">☁️</text>
+          <text x="470" y="60" font-size="34">☁️</text>
+          <text x="720" y="420" font-size="40">🌳</text>
+          <text x="300" y="330" font-size="28">🌼</text>
+
+          <!-- rings + hotspots -->
+          <g id="rings"></g>
+          <g id="spots"></g>
+        </svg>
+      </div>
+      <ul class="found-list" id="foundList"></ul>
+      <div class="row" style="margin-top:10px">
+        <button class="btn" id="spotHint">💡 힌트</button>
+        <button class="btn" id="spotReveal">정답 모두 보기</button>
+        <button class="btn" id="spotReset">다시 하기</button>
+      </div>
+    </section>
+
+    <section class="step" id="expr">
+      <h2><span class="num">2</span>Key Expressions · 오늘의 핵심 표현</h2>
+      <p class="hint">🔊 버튼을 눌러 듣고 따라 말해 보세요.</p>
+      <div class="expr-grid" id="exprGrid"></div>
+      <div class="row" style="margin-top:12px">
+        <label class="inline">말하기 속도
+          <select id="rate" class="blank" style="font-size:.9rem">
+            <option value="0.7">천천히</option>
+            <option value="0.85" selected>보통</option>
+            <option value="1">빠르게</option>
+          </select>
+        </label>
+      </div>
+    </section>
+
+    <section class="step" id="dialog">
+      <h2><span class="num">3</span>Listen &amp; Shadow · 대화 듣고 따라 하기</h2>
+      <p class="hint">① 글자 없이 듣기 → ② 글자 보며 듣기 → ③ 역할을 나눠 따라 말하기</p>
+      <div class="dlg-tabs" id="dlgTabs"></div>
+      <div class="row" style="margin-bottom:6px">
+        <button class="btn primary" id="playAll">▶ 전체 듣기</button>
+        <button class="btn" id="stopAll">■ 멈춤</button>
+        <label class="inline"><input type="checkbox" id="hideText"> 글자 가리기</label>
+      </div>
+      <div id="dlgBody"></div>
+      <div id="dlgQ" class="fill-item"></div>
+    </section>
+
+    <section class="step" id="tour">
+      <h2><span class="num">4</span>World Landmark Tour · 세계 명소 여권</h2>
+      <p class="hint">명소를 골라 대화를 완성하고 퀴즈를 맞히면 여권에 도장을 받아요. <span class="score" id="tourScore">0 / 9</span></p>
+      <div class="passport" id="passport"></div>
+      <div class="land-grid" id="landGrid"></div>
+      <div id="tourBox"></div>
+    </section>
+  </div>
+
+  <!-- ================= 2차시 ================= -->
+  <div class="panel" id="p2" role="tabpanel" aria-labelledby="tab2" hidden>
+
+    <section class="step" id="fill">
+      <h2><span class="num">5</span>Fill in the Blanks · 빈칸 채우기</h2>
+      <p class="hint">알맞은 말을 골라 대화를 완성하고 <b>채점</b>을 누르세요.</p>
+      <div id="fillBox"></div>
+      <div class="row"><button class="btn primary" id="fillCheck">채점하기</button><button class="btn" id="fillReset">다시 하기</button><span class="score" id="fillScore"></span></div>
+
+      <h3 style="margin:22px 0 4px">🧩 대화 순서 맞추기</h3>
+      <p class="hint">문장을 순서대로 눌러 대화를 완성하세요. 잘못 놓은 문장은 다시 누르면 빠져요.</p>
+      <div class="order-answer" id="orderAnswer"></div>
+      <div class="order-pool" id="orderPool"></div>
+      <div class="row"><button class="btn primary" id="orderCheck">확인</button><button class="btn" id="orderReset">섞기</button><span class="feedback" id="orderFb"></span></div>
+    </section>
+
+    <section class="step" id="pairtalk">
+      <h2><span class="num">6</span>Pair Talk · 짝 대화 카드</h2>
+      <p class="hint">A는 명소 정보를 알고 있어요. B는 모르는 척 질문해요. 대화가 끝나면 역할을 바꿔요!</p>
+      <div class="pair">
+        <div class="role a">
+          <h3>🙋 A (알려 주는 사람)</h3>
+          <div class="big" id="pairEmo"></div>
+          <div class="en" style="font-weight:700;font-size:1.1rem" id="pairName"></div>
+          <div class="secret" id="pairFacts" title="눌러서 보기"></div>
+          <div class="ko">↑ A만 눌러서 보세요</div>
+        </div>
+        <div class="role b">
+          <h3>🤔 B (궁금한 사람)</h3>
+          <ol class="en">
+            <li><i>(A의 질문에)</i> No, I don't know much about it.</li>
+            <li>Can you tell me more about it?</li>
+            <li>Really? That's interesting!</li>
+          </ol>
+          <div class="ko">대화 후 B가 들은 내용을 한국어로 말해 보세요.</div>
+        </div>
+      </div>
+      <div class="role" style="background:var(--bg);margin-top:12px">
+        <b>대화 틀</b>
+        <p class="en" style="margin:4px 0">A: Do you know about <u id="pairBlank">___</u>? It's in <u id="pairWhere">___</u>.<br>B: No, I don't know much about it. Can you tell me more about it?<br>A: Sure. <u>(fact)</u><br>B: Really? That's interesting!</p>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="pairNext">🎲 다음 카드</button>
+        <button class="btn" id="timerBtn">⏱ 1분 타이머</button>
+        <span class="timer" id="timer">1:00</span>
+      </div>
+    </section>
+
+    <section class="step" id="ox">
+      <h2><span class="num">7</span>You Know What? · 놀라운 사실 OX 퀴즈</h2>
+      <p class="hint">세계의 놀라운 사실! 맞으면 O, 틀리면 X. 이번 단원 읽기에서 더 자세히 배울 거예요.</p>
+      <div class="progress"><div id="oxBar"></div></div>
+      <div class="ox-card" id="oxCard"></div>
+    </section>
+
+    <section class="step" id="wrap">
+      <h2><span class="num">8</span>Wrap-up · 나만의 대화 만들기</h2>
+      <p class="hint">내가 소개하고 싶은 장소나 물건을 골라 대화를 만들어 보세요. (예: 우리 동네 명소, 좋아하는 음식, 가 보고 싶은 나라)</p>
+      <div class="maker">
+        <label>무엇을 소개할까요? <input id="mkTopic" class="en" placeholder="e.g. Namsan Tower" maxlength="40"></label>
+        <label>어디에 있나요? / 무엇인가요? <input id="mkWhere" class="en" placeholder="e.g. It's in Seoul." maxlength="60"></label>
+        <label>더 알려 줄 사실 하나 <input id="mkFact" class="en" placeholder="e.g. You can see all of Seoul from the top." maxlength="100"></label>
+      </div>
+      <div class="preview en" id="mkPreview" style="margin-top:12px"></div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="mkSay">🔊 들어 보기</button>
+        <button class="btn" id="mkCopy">📋 복사하기</button>
+        <span class="ko" id="mkMsg"></span>
+      </div>
+      <h3 style="margin:22px 0 4px">✅ 스스로 점검</h3>
+      <div class="check">
+        <label><input type="checkbox"> <span class="en">Do you know about ~?</span> 로 알고 있는지 물을 수 있다.</label>
+        <label><input type="checkbox"> <span class="en">I don't know much about it.</span> 으로 잘 모른다고 답할 수 있다.</label>
+        <label><input type="checkbox"> <span class="en">Can you tell me more about it?</span> 으로 더 알려 달라고 할 수 있다.</label>
+        <label><input type="checkbox"> 짝과 명소에 대해 영어로 대화를 나눴다.</label>
+      </div>
+    </section>
+  </div>
+
+  <footer>2026 만수중학교 1학년 영어 · Unit 7 You Know What? · 활동 내용은 저장되지 않아요.</footer>
+</main>
+
+<script>
+/* ---------- speech ---------- */
+const synth = window.speechSynthesis;
+let enVoice = null;
+function pickVoice(){
+  if (!synth) return;
+  const vs = synth.getVoices().filter(v => /^en[-_]/i.test(v.lang));
+  enVoice = vs.find(v => /en[-_]US/i.test(v.lang) && /Google|Natural|Online/i.test(v.name))
+         || vs.find(v => /en[-_]US/i.test(v.lang)) || vs[0] || null;
+}
+if (synth){ pickVoice(); synth.onvoiceschanged = pickVoice; }
+const rate = () => parseFloat(document.getElementById('rate').value) || 0.85;
+function speak(text, {pitch=1, onend}={}){
+  if (!synth){ alert('이 브라우저는 음성 읽기를 지원하지 않아요.'); return; }
+  const u = new SpeechSynthesisUtterance(text.replace(/[“”]/g,'"'));
+  u.lang = 'en-US'; if (enVoice) u.voice = enVoice; u.rate = rate(); u.pitch = pitch;
+  if (onend) u.onend = onend;
+  synth.speak(u);
+}
+function say(text, opts){ if (synth) synth.cancel(); speak(text, opts); }
+function sayBtn(text){
+  const b = document.createElement('button'); b.className='say'; b.type='button'; b.textContent='🔊';
+  b.setAttribute('aria-label','듣기: '+text); b.onclick = () => say(text); return b;
+}
+const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle = a => { a = a.slice(); for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+  document.querySelectorAll('.tab').forEach(x => x.setAttribute('aria-selected', x===t));
+  document.querySelectorAll('.panel').forEach(p => p.hidden = p.id !== t.getAttribute('aria-controls'));
+  if (synth) synth.cancel();
+  window.scrollTo({top: document.querySelector('.tabs').offsetTop, behavior:'smooth'});
+});
+
+/* ---------- 1. spot the mistakes ---------- */
+(function(){
+  const nums = document.getElementById('clockNums');
+  for (let i=1;i<=12;i++){
+    const a = (i/12)*2*Math.PI - Math.PI/2, r = 54;
+    const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+    t.setAttribute('x', (Math.cos(a)*r).toFixed(1)); t.setAttribute('y', (Math.sin(a)*r+6).toFixed(1));
+    t.textContent = i===12 ? '13' : i; if (i===12) t.setAttribute('fill','#dc2626');
+    nums.appendChild(t);
+  }
+})();
+const MISTAKES = [
+  {id:'cal',   x:40,  y:30,  w:150, h:150, emo:'📅', hint:'달력을 잘 보세요.',
+   en:'There are only 30 days in November.', ko:'11월은 30일까지만 있어요.'},
+  {id:'clock', x:255, y:35,  w:150, h:150, emo:'🕰️', hint:'시계 숫자를 세어 보세요.',
+   en:'A clock has twelve numbers, not thirteen.', ko:'시계에는 숫자가 12까지만 있어요.'},
+  {id:'sign',  x:515, y:105, w:215, h:70,  emo:'🗼', hint:'표지판의 도시 이름을 보세요.',
+   en:'The Eiffel Tower is in Paris, not in London.', ko:'에펠탑은 런던이 아니라 파리에 있어요.'},
+  {id:'polar', x:55,  y:310, w:215, h:105, emo:'🐧', hint:'북극과 남극에 사는 동물은?',
+   en:'Polar bears live in the Arctic, but penguins live in the Antarctic. They cannot be together.', ko:'북극곰은 북극, 펭귄은 남극에 살아서 함께 있을 수 없어요.'},
+  {id:'dino',  x:390, y:300, w:250, h:120, emo:'🦖', hint:'공룡과 스마트폰?',
+   en:'Dinosaurs lived a long time before people.', ko:'공룡은 사람이 나타나기 훨씬 전에 살았어요.'},
+];
+const found = new Set();
+function drawSpot(){
+  const rings = document.getElementById('rings'), spots = document.getElementById('spots');
+  rings.innerHTML = ''; spots.innerHTML = '';
+  MISTAKES.forEach(m => {
+    const e = document.createElementNS('http://www.w3.org/2000/svg','ellipse');
+    e.setAttribute('cx', m.x+m.w/2); e.setAttribute('cy', m.y+m.h/2);
+    e.setAttribute('rx', m.w/2+8); e.setAttribute('ry', m.h/2+8);
+    e.setAttribute('class','ring'+(found.has(m.id)?' on':'')); rings.appendChild(e);
+    const r = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    r.setAttribute('x',m.x); r.setAttribute('y',m.y); r.setAttribute('width',m.w); r.setAttribute('height',m.h);
+    r.setAttribute('class','spot');
+    r.addEventListener('click', ev => { ev.stopPropagation(); findSpot(m.id); });
+    spots.appendChild(r);
+  });
+  const list = document.getElementById('foundList'); list.innerHTML = '';
+  MISTAKES.forEach((m,i) => {
+    const li = document.createElement('li');
+    if (found.has(m.id)){
+      li.innerHTML = `<span>${m.emo}</span><span style="flex:1"><span class="en">${esc(m.en)}</span><br><span class="ko">${esc(m.ko)}</span></span>`;
+      li.appendChild(sayBtn(m.en));
+    } else { li.className='locked'; li.textContent = `${i+1}. ? ? ?`; }
+    list.appendChild(li);
+  });
+  document.getElementById('spotScore').textContent = `${found.size} / 5`;
+}
+function findSpot(id){
+  if (found.has(id)) return;
+  found.add(id); drawSpot();
+  const m = MISTAKES.find(x=>x.id===id); say(m.en);
+  if (found.size===5) setTimeout(()=>document.getElementById('spotScore').textContent='5 / 5 🎉 Great job!', 300);
+}
+document.getElementById('scene').addEventListener('click', () => {
+  const w = document.getElementById('sceneWrap'); w.classList.remove('flash'); void w.offsetWidth; w.classList.add('flash');
+});
+document.getElementById('spotHint').onclick = () => {
+  const m = MISTAKES.find(x => !found.has(x.id));
+  alert(m ? '💡 ' + m.hint : '모두 찾았어요!');
+};
+document.getElementById('spotReveal').onclick = () => { MISTAKES.forEach(m=>found.add(m.id)); drawSpot(); };
+document.getElementById('spotReset').onclick = () => { found.clear(); drawSpot(); };
+drawSpot();
+
+/* ---------- 2. expressions ---------- */
+const EXPR = [
+  {title:'❓ 알고 있는지 묻기', lines:[
+    ['Do you know about Machu Picchu?','마추픽추에 대해 아니?'],
+    ['Have you heard about Angel Falls?','앙헬 폭포에 대해 들어 봤니?']]},
+  {title:'🙂 대답하기', lines:[
+    ['Yes, I do. It’s in Peru.','응, 알아. 페루에 있어.'],
+    ['No, I don’t know much about it.','아니, 그것에 대해 잘 몰라.']]},
+  {title:'🤔 궁금증 표현하기', lines:[
+    ['Can you tell me more about it?','그것에 대해 더 말해 줄 수 있니?'],
+    ['I’m curious about it.','그것이 궁금해.']]},
+  {title:'💬 대답하기', lines:[
+    ['Sure. It means “old mountain.”','물론이지. 그건 "오래된 산"이라는 뜻이야.'],
+    ['Of course. It’s a big clock tower.','물론이지. 그건 큰 시계탑이야.']]},
+];
+(function(){
+  const g = document.getElementById('exprGrid');
+  EXPR.forEach(e => {
+    const d = document.createElement('div'); d.className='expr';
+    d.innerHTML = `<h3>${e.title}</h3>`;
+    e.lines.forEach(([en,ko]) => {
+      const l = document.createElement('div'); l.className='line';
+      l.appendChild(sayBtn(en));
+      const s = document.createElement('div'); s.innerHTML = `<div class="en">${esc(en)}</div><div class="ko">${esc(ko)}</div>`;
+      l.appendChild(s); d.appendChild(l);
+    });
+    g.appendChild(d);
+  });
+})();
+
+/* ---------- 3. dialogues ---------- */
+const KEYS = [/Do you know about/g, /Have you heard about/g, /I don’t know much about (it|them)/g, /Can you tell me more about (it|them)\?/g];
+const DIALOGS = [
+  {title:'🗿 Moai', lines:[
+    ['A','Do you know about these statues?'],
+    ['B','No, I don’t know much about them.'],
+    ['A','They are the Moai. They are on Easter Island.'],
+    ['B','Can you tell me more about them?'],
+    ['A','Sure. There are almost one thousand of them on the island.'],
+    ['B','Wow, that’s a lot!']],
+   q:{text:'모아이 석상은 섬에 대략 몇 개 있나요?', options:['약 100개','약 500개','약 1,000개'], answer:2}},
+  {title:'💧 Angel Falls', lines:[
+    ['A','Do you know about Angel Falls?'],
+    ['B','Angel Falls? What is it?'],
+    ['A','It’s the tallest waterfall in the world. It’s in Venezuela.'],
+    ['B','That’s interesting. Can you tell me more about it?'],
+    ['A','Sure. It is about nine hundred eighty meters tall.'],
+    ['B','Amazing! I’d like to go there someday.']],
+   q:{text:'앙헬 폭포는 어느 나라에 있나요?', options:['브라질','베네수엘라','캐나다'], answer:1}},
+  {title:'🥬 Kimchi', lines:[
+    ['A','Do you know about kimchi?'],
+    ['B','Yes, I do. It’s a Korean food.'],
+    ['A','Right. Do you know about Kimjang?'],
+    ['B','No, I don’t know much about it. Can you tell me more about it?'],
+    ['A','Sure. It’s making a lot of kimchi together for the winter.'],
+    ['B','Oh, I see. That sounds fun!']],
+   q:{text:'B는 김장(Kimjang)에 대해 잘 알고 있었나요?', options:['네, 잘 알았어요','아니요, 잘 몰랐어요'], answer:1}},
+];
+let curDlg = 0, playing = false;
+function hl(text){
+  let h = esc(text);
+  KEYS.forEach(re => { h = h.replace(re, m => `<span class="key">${m}</span>`); });
+  return h;
+}
+function renderDlg(){
+  const tabs = document.getElementById('dlgTabs'); tabs.innerHTML='';
+  DIALOGS.forEach((d,i) => {
+    const b = document.createElement('button'); b.className='btn'; b.textContent=d.title;
+    b.setAttribute('aria-pressed', i===curDlg); b.onclick = () => { stopDlg(); curDlg=i; renderDlg(); };
+    tabs.appendChild(b);
+  });
+  const d = DIALOGS[curDlg], body = document.getElementById('dlgBody'); body.innerHTML='';
+  d.lines.forEach(([who,txt],i) => {
+    const row = document.createElement('div'); row.className='bubble '+who.toLowerCase();
+    row.innerHTML = `<div class="who">${who==='A'?'🧑':'👧'}</div><div class="txt" id="ln${i}"><b>${who}</b> <span class="en en-text">${hl(txt)}</span></div>`;
+    row.appendChild(sayBtn(txt));
+    row.lastChild.onclick = () => { stopDlg(); speak(txt, {pitch: who==='A'?0.9:1.25}); };
+    body.appendChild(row);
+  });
+  const q = document.getElementById('dlgQ');
+  q.innerHTML = `<p><b>Q.</b> ${esc(d.q.text)}</p><div class="choices"></div><div class="feedback"></div>`;
+  d.q.options.forEach((o,i) => {
+    const b = document.createElement('button'); b.className='btn choice'; b.textContent=o;
+    b.onclick = () => {
+      const fb = q.querySelector('.feedback');
+      if (i===d.q.answer){ b.classList.add('right'); fb.className='feedback ok'; fb.textContent='정답! 👍'; }
+      else { b.classList.add('wrong'); fb.className='feedback no'; fb.textContent='다시 들어 보세요.'; }
+    };
+    q.querySelector('.choices').appendChild(b);
+  });
+}
+function stopDlg(){ playing=false; if (synth) synth.cancel(); document.querySelectorAll('.txt.speaking').forEach(e=>e.classList.remove('speaking')); }
+document.getElementById('playAll').onclick = () => {
+  stopDlg(); playing = true;
+  const lines = DIALOGS[curDlg].lines;
+  const step = i => {
+    document.querySelectorAll('.txt.speaking').forEach(e=>e.classList.remove('speaking'));
+    if (!playing || i>=lines.length){ playing=false; return; }
+    document.getElementById('ln'+i).classList.add('speaking');
+    speak(lines[i][1], {pitch: lines[i][0]==='A'?0.9:1.25, onend: () => setTimeout(()=>step(i+1), 350)});
+  };
+  step(0);
+};
+document.getElementById('stopAll').onclick = stopDlg;
+document.getElementById('hideText').onchange = e => document.getElementById('dialog').classList.toggle('hide-text', e.target.checked);
+renderDlg();
+
+/* ---------- 4. landmark tour ---------- */
+const LANDS = [
+  {n:'Machu Picchu', emo:'⛰️', where:'Peru', ko:'마추픽추', fact:'It means “old mountain.”', fact2:'People built it about 600 years ago.', opts:['Peru','Mexico','Spain']},
+  {n:'Big Ben', emo:'🕰️', where:'the UK', ko:'빅벤', fact:'It is a big clock tower in London.', fact2:'Big Ben is the name of the big bell in the tower.', opts:['France','the UK','the USA']},
+  {n:'the Eiffel Tower', emo:'🗼', where:'France', ko:'에펠탑', fact:'It has the names of 72 scientists on it.', fact2:'It was built in 1889.', opts:['Italy','France','Germany']},
+  {n:'the Statue of Liberty', emo:'🗽', where:'the USA', ko:'자유의 여신상', fact:'It was a present from France.', fact2:'She holds a torch in her right hand.', opts:['the USA','Canada','France']},
+  {n:'the Taj Mahal', emo:'🕌', where:'India', ko:'타지마할', fact:'A king built it for his wife.', fact2:'It is made of white stone.', opts:['Egypt','Turkey','India']},
+  {n:'the Colosseum', emo:'🏟️', where:'Italy', ko:'콜로세움', fact:'It could hold about 50,000 people.', fact2:'It is almost 2,000 years old.', opts:['Greece','Italy','Spain']},
+  {n:'the Great Wall', emo:'🧱', where:'China', ko:'만리장성', fact:'It is more than 20,000 kilometers long.', fact2:'People built it to protect their land.', opts:['China','Japan','Mongolia']},
+  {n:'the Sydney Opera House', emo:'🎭', where:'Australia', ko:'시드니 오페라 하우스', fact:'Its roof looks like big white sails.', fact2:'It opened in 1973.', opts:['New Zealand','Australia','the UK']},
+  {n:'the Pyramids of Giza', emo:'🔺', where:'Egypt', ko:'기자의 피라미드', fact:'They are about 4,500 years old.', fact2:'They were tombs for kings.', opts:['Mexico','Egypt','India']},
+];
+const stamped = new Set();
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+function renderLands(){
+  const pp = document.getElementById('passport'); pp.innerHTML='';
+  LANDS.forEach((l,i) => { const s=document.createElement('div'); s.className='stamp'+(stamped.has(i)?' got':''); s.textContent=l.emo; s.title=l.ko; pp.appendChild(s); });
+  const g = document.getElementById('landGrid'); g.innerHTML='';
+  LANDS.forEach((l,i) => {
+    const b = document.createElement('button'); b.className='land'+(stamped.has(i)?' done':'');
+    b.innerHTML = `<span class="emo">${l.emo}</span><span class="nm en">${esc(cap(l.n))}</span><br><span class="ko">${l.ko}</span>`;
+    b.onclick = () => openLand(i); g.appendChild(b);
+  });
+  document.getElementById('tourScore').textContent = `${stamped.size} / 9` + (stamped.size===9?' 🎉 여권 완성!':'');
+}
+function openLand(i){
+  const l = LANDS[i], box = document.getElementById('tourBox');
+  const lines = [
+    ['A', `Do you know about ${l.n}?`],
+    ['B', `No, I don’t know much about ${l.n.startsWith('the Pyramids')?'them':'it'}.`],
+  ];
+  const more = l.n.startsWith('the Pyramids') ? 'them' : 'it';
+  box.innerHTML = `<div class="tour-box"><div style="font-size:2rem">${l.emo} <span class="en" style="font-size:1.2rem;font-weight:700">${esc(cap(l.n))}</span></div><div id="tl"></div><div id="tq"></div></div>`;
+  const tl = box.querySelector('#tl');
+  const addLine = (who, txt) => {
+    const row = document.createElement('div'); row.className='bubble '+who.toLowerCase();
+    row.innerHTML = `<div class="who">${who==='A'?'🧑':'👧'}</div><div class="txt"><b>${who}</b> <span class="en">${hl(txt)}</span></div>`;
+    row.appendChild(sayBtn(txt)); tl.appendChild(row);
+  };
+  lines.forEach(([w,t]) => addLine(w,t));
+  const ask = document.createElement('button'); ask.className='btn primary en'; ask.textContent=`🤔 Can you tell me more about ${more}?`;
+  ask.onclick = () => {
+    ask.remove();
+    addLine('B', `Can you tell me more about ${more}?`);
+    const a = `Sure. ${l.fact} ${l.fact2}`;
+    addLine('A', a); say(a, {pitch:0.9});
+    const tq = box.querySelector('#tq');
+    tq.innerHTML = `<p style="margin:12px 0 0"><b>Q.</b> <span class="en">Where ${more==='them'?'are they':'is it'}?</span> <span class="ko">어느 나라에 있나요?</span></p><div class="choices"></div><div class="feedback"></div>`;
+    shuffle(l.opts).forEach(o => {
+      const b = document.createElement('button'); b.className='btn choice en'; b.textContent=cap(o);
+      b.onclick = () => {
+        const fb = tq.querySelector('.feedback');
+        if (o===l.where){
+          b.classList.add('right'); fb.className='feedback ok';
+          fb.innerHTML = `<span class="en">${more==='them'?'They are':'It’s'} in ${esc(l.where)}.</span> 도장 꾹! 🛂`;
+          say(`${more==='them'?'They are':'It’s'} in ${l.where}.`);
+          stamped.add(i); renderLands();
+        } else { b.classList.add('wrong'); fb.className='feedback no'; fb.textContent='다시 골라 보세요.'; }
+      };
+      tq.querySelector('.choices').appendChild(b);
+    });
+  };
+  tl.after(ask);
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+renderLands();
+
+/* ---------- 5. fill in the blanks ---------- */
+const FILL = [
+  {parts:['A: Do you ', ' about the Colosseum?'], opts:['know','tell','see'], ans:'know'},
+  {parts:['B: No, I don’t know ', ' about it.'], opts:['many','much','more'], ans:'much'},
+  {parts:['B: Can you ', ' me more about it?'], opts:['say','talk','tell'], ans:'tell'},
+  {parts:['A: ', '. It could hold about 50,000 people.'], opts:['Sure','Sorry','No'], ans:'Sure'},
+  {parts:['A: Do you know about Big Ben? — B: Yes, I ', '. It’s in London.'], opts:['am','do','know'], ans:'do'},
+  {parts:['B: I’m ', ' about the Taj Mahal. Can you tell me more about it?'], opts:['curious','sorry','happy'], ans:'curious'},
+];
+function renderFill(){
+  const box = document.getElementById('fillBox'); box.innerHTML='';
+  FILL.forEach((f,i) => {
+    const d = document.createElement('div'); d.className='fill-item en';
+    const p = document.createElement('p');
+    p.append(`${i+1}. ${f.parts[0]}`);
+    const s = document.createElement('select'); s.className='blank'; s.dataset.i=i;
+    s.innerHTML = '<option value="">______</option>' + shuffle(f.opts).map(o=>`<option>${o}</option>`).join('');
+    s.onchange = () => s.classList.remove('right','wrong');
+    p.append(s, f.parts[1]); d.appendChild(p); box.appendChild(d);
+  });
+  document.getElementById('fillScore').textContent='';
+}
+document.getElementById('fillCheck').onclick = () => {
+  let ok = 0;
+  document.querySelectorAll('#fillBox select').forEach(s => {
+    const right = s.value === FILL[s.dataset.i].ans;
+    s.classList.toggle('right', right); s.classList.toggle('wrong', !right); if (right) ok++;
+  });
+  document.getElementById('fillScore').textContent = `${ok} / ${FILL.length}` + (ok===FILL.length?' 🎉 완벽해요!':'');
+};
+document.getElementById('fillReset').onclick = renderFill;
+renderFill();
+
+/* order */
+const ORDER = [
+  'A: Do you know about the Sydney Opera House?',
+  'B: No, I don’t know much about it.',
+  'B: Can you tell me more about it?',
+  'A: Sure. Its roof looks like big white sails.',
+  'B: Wow, I want to see it someday!',
+];
+let picked = [];
+function renderOrder(reshuffle){
+  if (reshuffle){ picked = []; renderOrder.pool = shuffle(ORDER.map((_,i)=>i)); }
+  const pool = document.getElementById('orderPool'), ans = document.getElementById('orderAnswer');
+  pool.innerHTML=''; ans.innerHTML='';
+  renderOrder.pool.filter(i=>!picked.includes(i)).forEach(i => {
+    const b = document.createElement('button'); b.className='btn en'; b.textContent=ORDER[i];
+    b.onclick = () => { picked.push(i); renderOrder(); }; pool.appendChild(b);
+  });
+  picked.forEach((i,k) => {
+    const b = document.createElement('button'); b.className='btn en'; b.textContent=`${k+1}. ${ORDER[i]}`;
+    b.onclick = () => { picked.splice(k,1); renderOrder(); }; ans.appendChild(b);
+  });
+  if (!picked.length) ans.innerHTML = '<span class="ko">여기에 순서대로 쌓여요</span>';
+  document.getElementById('orderFb').textContent='';
+}
+document.getElementById('orderCheck').onclick = () => {
+  const fb = document.getElementById('orderFb');
+  if (picked.length < ORDER.length){ fb.className='feedback no'; fb.textContent='문장을 모두 골라 주세요.'; return; }
+  const ok = picked.every((v,i)=>v===i);
+  fb.className = 'feedback ' + (ok?'ok':'no'); fb.textContent = ok ? '정답! 🎉' : '순서를 다시 생각해 보세요.';
+  if (ok){ stopDlg(); ORDER.forEach(t => speak(t.slice(3), {pitch: t[0]==='A'?0.9:1.25})); }
+};
+document.getElementById('orderReset').onclick = () => renderOrder(true);
+renderOrder(true);
+
+/* ---------- 6. pair talk ---------- */
+let pairDeck = [], pairCur = null;
+function nextPair(){
+  if (!pairDeck.length) pairDeck = shuffle(LANDS.map((_,i)=>i).filter(i=>i!==pairCur));
+  pairCur = pairDeck.pop(); const l = LANDS[pairCur];
+  document.getElementById('pairEmo').textContent = l.emo;
+  document.getElementById('pairName').textContent = cap(l.n) + ' · ' + l.ko;
+  const f = document.getElementById('pairFacts');
+  f.className='secret en';
+  f.innerHTML = `• in ${esc(l.where)}<br>• ${esc(l.fact)}<br>• ${esc(l.fact2)}`;
+  document.getElementById('pairBlank').textContent = l.n;
+  document.getElementById('pairWhere').textContent = l.where;
+}
+document.getElementById('pairFacts').onclick = e => e.currentTarget.classList.toggle('show');
+document.getElementById('pairNext').onclick = nextPair;
+let tId = null;
+document.getElementById('timerBtn').onclick = () => {
+  clearInterval(tId); let s = 60; const el = document.getElementById('timer');
+  const draw = () => el.textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+  draw(); tId = setInterval(() => { s--; draw(); if (s<=0){ clearInterval(tId); el.textContent='⏰ Time’s up! 역할 바꾸기'; } }, 1000);
+};
+nextPair();
+
+/* ---------- 7. OX ---------- */
+const OX = [
+  {q:'Mount Everest is the tallest mountain from the bottom to the top.', ko:'에베레스트산은 바닥부터 꼭대기까지 잰 높이가 가장 높은 산이다.', a:false,
+   exp:'하와이의 마우나케아(Mauna Kea)는 바다 밑에서부터 시작해요. 바닥부터 재면 약 10,000m로 에베레스트(약 8,849m)보다 높아요!'},
+  {q:'The Sahara is the largest desert in the world.', ko:'사하라는 세계에서 가장 큰 사막이다.', a:false,
+   exp:'사막은 비가 아주 적게 오는 곳이에요. 그래서 남극(Antarctica)이 가장 큰 사막이에요. 사하라는 가장 큰 "더운" 사막이에요.'},
+  {q:'Angel Falls is the tallest waterfall in the world.', ko:'앙헬 폭포는 세계에서 가장 높은 폭포이다.', a:true,
+   exp:'베네수엘라에 있는 앙헬 폭포는 높이가 약 980m로 세계에서 가장 높은 폭포예요.'},
+  {q:'An octopus has three hearts.', ko:'문어는 심장이 세 개다.', a:true,
+   exp:'문어는 심장이 3개예요! 그리고 피 색깔은 파란색이랍니다.'},
+  {q:'You can see the Great Wall of China from the Moon.', ko:'달에서 만리장성을 눈으로 볼 수 있다.', a:false,
+   exp:'만리장성은 아주 길지만 폭이 좁아서 달에서는 눈으로 볼 수 없어요.'},
+  {q:'A day on Venus is longer than a year on Venus.', ko:'금성의 하루는 금성의 1년보다 길다.', a:true,
+   exp:'금성은 아주 천천히 돌아서 하루가 지구의 약 243일, 1년은 약 225일이에요. 하루가 1년보다 길어요!'},
+  {q:'The Pacific Ocean is the largest ocean in the world.', ko:'태평양은 세계에서 가장 큰 바다이다.', a:true,
+   exp:'태평양은 지구의 모든 땅을 합친 것보다도 넓어요.'},
+  {q:'Penguins live at the North Pole.', ko:'펭귄은 북극에 산다.', a:false,
+   exp:'펭귄은 남반구에 살아요. 북극에는 북극곰이 살아요. (Warm-up 그림 기억나죠?)'},
+];
+let oxI = 0, oxScore = 0, oxDone = false;
+function renderOX(){
+  const card = document.getElementById('oxCard');
+  document.getElementById('oxBar').style.width = (oxI/OX.length*100)+'%';
+  if (oxI >= OX.length){
+    card.innerHTML = `<div style="font-size:3rem">🏆</div><p class="ox-q">${oxScore} / ${OX.length}</p><p class="en">You know what? You’re amazing!</p>`;
+    const b = document.createElement('button'); b.className='btn primary'; b.textContent='다시 풀기';
+    b.onclick = () => { oxI=0; oxScore=0; renderOX(); }; card.appendChild(b); return;
+  }
+  const o = OX[oxI]; oxDone = false;
+  card.innerHTML = `<div class="ko">${oxI+1} / ${OX.length}</div><p class="ox-q en">${esc(o.q)}</p><div class="ko">${esc(o.ko)}</div>
+    <div class="ox-btns"><button data-v="1" aria-label="O">⭕</button><button data-v="0" aria-label="X">❌</button></div><div id="oxExp"></div>`;
+  card.querySelector('.ox-q').prepend(sayBtn(o.q), ' ');
+  card.querySelectorAll('.ox-btns button').forEach(b => b.onclick = () => {
+    if (oxDone) return; oxDone = true;
+    const right = (b.dataset.v==='1') === o.a; if (right) oxScore++;
+    b.style.borderColor = right ? 'var(--good)' : 'var(--bad)';
+    const e = card.querySelector('#oxExp');
+    e.innerHTML = `<div class="ox-exp"><div class="feedback ${right?'ok':'no'}">${right?'정답! 🎉':'아쉬워요!'} 정답은 ${o.a?'⭕':'❌'}</div>${esc(o.exp)}</div>`;
+    const n = document.createElement('button'); n.className='btn primary'; n.style.marginTop='10px';
+    n.textContent = oxI+1<OX.length ? '다음 문제 →' : '결과 보기';
+    n.onclick = () => { oxI++; renderOX(); }; e.appendChild(n);
+  });
+}
+renderOX();
+
+/* ---------- 8. wrap-up ---------- */
+const mk = id => document.getElementById(id);
+function mkText(){
+  const t = mk('mkTopic').value.trim() || '_____', w = mk('mkWhere').value.trim() || '_____', f = mk('mkFact').value.trim() || '_____';
+  return [
+    `A: Do you know about ${t}?`,
+    `B: No, I don't know much about it.`,
+    `A: ${w}`,
+    `B: Can you tell me more about it?`,
+    `A: Sure. ${f}`,
+    `B: Really? That's interesting!`,
+  ];
+}
+function mkRender(){ mk('mkPreview').innerHTML = mkText().map(esc).join('<br>'); }
+['mkTopic','mkWhere','mkFact'].forEach(id => mk(id).addEventListener('input', mkRender));
+mk('mkSay').onclick = () => { stopDlg(); mkText().forEach(l => speak(l.slice(3), {pitch: l[0]==='A'?0.9:1.25})); };
+mk('mkCopy').onclick = async () => {
+  try { await navigator.clipboard.writeText(mkText().join('\n')); mk('mkMsg').textContent='복사했어요! 패들렛이나 과제란에 붙여 넣으세요.'; }
+  catch { mk('mkMsg').textContent='복사가 안 되면 글을 직접 드래그해서 복사하세요.'; }
+};
+mkRender();
+</script>
+</body>
+</html>
