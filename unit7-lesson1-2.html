@@ -313,18 +313,21 @@
 
     <section class="step" id="wrap">
       <h2><span class="num">8</span>Wrap-up · 나만의 대화 만들기</h2>
-      <p class="hint">내가 소개하고 싶은 장소나 물건을 골라 대화를 만들어 보세요. (예: 우리 동네 명소, 좋아하는 음식, 가 보고 싶은 나라)</p>
+      <p class="hint">내가 소개하고 싶은 장소나 물건을 골라 대화를 만들어 보세요. (예: 우리 동네 명소, 좋아하는 음식, 가 보고 싶은 나라)<br>
+        영어가 어려우면 <b>한국어로 써도 괜찮아요!</b> <b>✨ 영어로 바꾸기</b>를 누르면 영어 문장으로 바꿔 줘요.</p>
       <div class="maker">
-        <label>무엇을 소개할까요? <input id="mkTopic" class="en" placeholder="e.g. Namsan Tower" maxlength="40"></label>
-        <label>어디에 있나요? / 무엇인가요? <input id="mkWhere" class="en" placeholder="e.g. It's in Seoul." maxlength="60"></label>
-        <label>더 알려 줄 사실 하나 <input id="mkFact" class="en" placeholder="e.g. You can see all of Seoul from the top." maxlength="100"></label>
+        <label>무엇을 소개할까요? <input id="mkTopic" placeholder="예: Namsan Tower / 남산타워" maxlength="40"></label>
+        <label>어디에 있나요? / 무엇인가요? <input id="mkWhere" placeholder="예: It's in Seoul. / 서울에 있어" maxlength="60"></label>
+        <label>더 알려 줄 사실 하나 <input id="mkFact" placeholder="예: You can see all of Seoul from the top. / 꼭대기에서 서울 전체를 볼 수 있어" maxlength="100"></label>
       </div>
       <div class="preview en" id="mkPreview" style="margin-top:12px"></div>
       <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="mkTrans">✨ 영어로 바꾸기</button>
         <button class="btn primary" id="mkSay">🔊 들어 보기</button>
         <button class="btn" id="mkCopy">📋 복사하기</button>
         <span class="ko" id="mkMsg"></span>
       </div>
+      <p class="ko" style="margin:8px 0 0">※ 영어로 바꿀 때 입력한 글이 번역 서비스로 보내져요. 이름·전화번호 같은 개인정보는 쓰지 마세요. 기계 번역이라 어색할 수 있으니 선생님과 함께 확인해요.</p>
       <h3 style="margin:22px 0 4px">✅ 스스로 점검</h3>
       <div class="check">
         <label><input type="checkbox"> <span class="en">Do you know about ~?</span> 로 알고 있는지 물을 수 있다.</label>
@@ -750,20 +753,118 @@ renderOX();
 
 /* ---------- 8. wrap-up ---------- */
 const mk = id => document.getElementById(id);
+const HANGUL = /[ㄱ-ㆎ가-힣]/;
+const FIELDS = ['mkTopic','mkWhere','mkFact'];
+const mkTrans = {};   // id -> {src, en}: 번역 결과 (입력이 바뀌면 무효)
+function mkVal(id){
+  const raw = mk(id).value.trim();
+  const tr = mkTrans[id];
+  if (tr && tr.src === raw) return {text: tr.en, ko: raw};
+  return {text: raw, ko: null};
+}
+/* 대화 틀에 맞게 다듬기 */
+const endPunct = s => /[.!?]$/.test(s) ? s : s + '.';
+const capFirst = s => s.charAt(0).toUpperCase() + s.slice(1);
+function polishTopic(s){
+  s = s.trim().replace(/[.!?]+$/, '');
+  return s.replace(/^(The|A|An) /, m => m.toLowerCase());
+}
+function polishWhere(en, ko){
+  en = en.trim();
+  // "서울", "부산 해운대"처럼 장소 이름만 쓴 경우 → It's in ~.
+  const koSentence = /(요|다|야|어|해|지|음|임|니다)[.!?~]*$/.test(ko);
+  const hasVerb = /\b(is|are|was|were|am|'s|’s|has|have|can|means?|lives?|makes?)\b/i.test(en);
+  if (!koSentence && !hasVerb && en.split(/\s+/).length <= 4){
+    en = en.replace(/[.!?]+$/, '').replace(/^in /i, '');
+    return `It's in ${capFirst(en)}.`;
+  }
+  return endPunct(capFirst(en));
+}
+function polishFact(en){
+  en = en.trim().replace(/^(Sure|Of course)[,.!]\s*/i, '');
+  // "Spicy and sweet" 처럼 주어·동사가 빠진 짧은 말 → It's spicy and sweet.
+  const hasSubj = /^(it|they|you|we|i|he|she|there|this|that|these|those|people|my|our)\b/i.test(en);
+  const hasVerb = /\b(is|are|was|were|am|'s|’s|has|have|had|can|could|will|do|does|did)\b/i.test(en);
+  if (!hasSubj && !hasVerb && en.split(/\s+/).length <= 5) en = `It's ${en.charAt(0).toLowerCase()}${en.slice(1)}`;
+  return endPunct(capFirst(en));
+}
+
+function mkParts(){
+  const t = mkVal('mkTopic'), w = mkVal('mkWhere'), f = mkVal('mkFact');
+  const blank = v => v.text ? v : {text:'_____', ko:null};
+  return {t: blank(t), w: blank(w), f: blank(f)};
+}
 function mkText(){
-  const t = mk('mkTopic').value.trim() || '_____', w = mk('mkWhere').value.trim() || '_____', f = mk('mkFact').value.trim() || '_____';
+  const {t,w,f} = mkParts();
   return [
-    `A: Do you know about ${t}?`,
+    `A: Do you know about ${t.text}?`,
     `B: No, I don't know much about it.`,
-    `A: ${w}`,
+    `A: ${w.text}`,
     `B: Can you tell me more about it?`,
-    `A: Sure. ${f}`,
+    `A: Sure. ${f.text}`,
     `B: Really? That's interesting!`,
   ];
 }
-function mkRender(){ mk('mkPreview').innerHTML = mkText().map(esc).join('<br>'); }
-['mkTopic','mkWhere','mkFact'].forEach(id => mk(id).addEventListener('input', mkRender));
-mk('mkSay').onclick = () => { stopDlg(); mkText().forEach(l => speak(l.slice(3), {pitch: l[0]==='A'?0.9:1.25})); };
+function mark(v){
+  if (HANGUL.test(v.text)) return `<mark style="background:var(--accent-soft);color:inherit;border-radius:4px;padding:0 3px">${esc(v.text)}</mark>`;
+  if (v.ko) return `<span style="background:var(--good-soft);border-radius:4px;padding:0 3px">${esc(v.text)}</span>`;
+  return esc(v.text);
+}
+function mkRender(){
+  const {t,w,f} = mkParts();
+  const sub = v => v.ko ? `<div class="ko" style="margin:-2px 0 4px 22px">↳ ${esc(v.ko)}</div>` : '';
+  mk('mkPreview').innerHTML =
+    `A: Do you know about ${mark(t)}?${sub(t)}<br>` +
+    `B: No, I don't know much about it.<br>` +
+    `A: ${mark(w)}${sub(w)}<br>` +
+    `B: Can you tell me more about it?<br>` +
+    `A: Sure. ${mark(f)}${sub(f)}<br>` +
+    `B: Really? That's interesting!`;
+  const left = FIELDS.some(id => HANGUL.test(mkVal(id).text));
+  mk('mkTrans').style.display = left ? '' : 'none';
+  mk('mkMsg').textContent = left ? '주황색 한국어 부분을 ✨ 영어로 바꿔 보세요.' : '';
+}
+FIELDS.forEach(id => mk(id).addEventListener('input', mkRender));
+
+async function translateKo(text){
+  try {
+    const r = await fetch('https://translate.googleapis.com/translate_a/single?client=gtx&sl=ko&tl=en&dt=t&q=' + encodeURIComponent(text));
+    if (!r.ok) throw 0;
+    const j = await r.json();
+    const out = j[0].map(x => x[0]).join('').trim();
+    if (out) return out;
+    throw 0;
+  } catch (e) {
+    const r = await fetch('https://api.mymemory.translated.net/get?langpair=ko|en&q=' + encodeURIComponent(text));
+    const j = await r.json();
+    const out = (j.responseData && j.responseData.translatedText || '').trim();
+    if (!out || /MYMEMORY WARNING|QUERY LENGTH/i.test(out)) throw new Error('번역 실패');
+    return out;
+  }
+}
+mk('mkTrans').onclick = async () => {
+  const btn = mk('mkTrans'); btn.disabled = true; btn.textContent = '⏳ 바꾸는 중...';
+  try {
+    for (const id of FIELDS){
+      const raw = mk(id).value.trim();
+      if (!raw || !HANGUL.test(raw) || (mkTrans[id] && mkTrans[id].src === raw)) continue;
+      let en = await translateKo(raw);
+      en = id==='mkTopic' ? polishTopic(en) : id==='mkWhere' ? polishWhere(en, raw) : polishFact(en);
+      mkTrans[id] = {src: raw, en};
+    }
+    mkRender();
+    mk('mkMsg').textContent = '영어로 바꿨어요! 초록색 부분을 소리 내어 읽어 보세요. 📖';
+  } catch (e) {
+    mk('mkMsg').textContent = '지금은 번역이 안 돼요. 인터넷 연결을 확인하거나, 위의 핵심 표현을 보고 영어로 써 보세요.';
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ 영어로 바꾸기';
+  }
+};
+mk('mkSay').onclick = () => {
+  stopDlg();
+  if (FIELDS.some(id => HANGUL.test(mkVal(id).text))){ mk('mkMsg').textContent = '먼저 ✨ 영어로 바꾸기를 눌러 주세요.'; return; }
+  mkText().forEach(l => speak(l.slice(3), {pitch: l[0]==='A'?0.9:1.25}));
+};
 mk('mkCopy').onclick = async () => {
   try { await navigator.clipboard.writeText(mkText().join('\n')); mk('mkMsg').textContent='복사했어요! 패들렛이나 과제란에 붙여 넣으세요.'; }
   catch { mk('mkMsg').textContent='복사가 안 되면 글을 직접 드래그해서 복사하세요.'; }
